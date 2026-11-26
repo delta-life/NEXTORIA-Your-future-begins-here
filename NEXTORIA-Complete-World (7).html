@@ -1,0 +1,1337 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXTORIA – Your future begins here</title>
+<style>
+
+:root{
+  --midnight:#071321;
+  --navy:#0d2035;
+  --panel:rgba(10,25,43,.94);
+  --gold:#e8bd63;
+  --gold-light:#ffe2a0;
+  --ink:#f4f7fb;
+  --muted:#a9b8c9;
+  --line:rgba(255,255,255,.12);
+  --blue:#4d9bd8;
+}
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--midnight);color:var(--ink)}
+button{font:inherit;cursor:pointer;transition:transform .18s ease,filter .18s ease,background .18s ease}
+button:hover{filter:brightness(1.12);transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+#start{
+ position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+ padding:24px;text-align:center;color:white;
+ background:
+  radial-gradient(ellipse at 50% 20%,rgba(51,112,157,.42),transparent 48%),
+  linear-gradient(145deg,#102d49 0%,#091a2c 52%,#050d18 100%);
+}
+#start:before,#start:after{content:"";position:absolute;border:1px solid rgba(232,189,99,.18);border-radius:50%;pointer-events:none}
+#start:before{width:min(78vw,700px);height:min(78vw,700px)}
+#start:after{width:min(58vw,520px);height:min(58vw,520px);border-color:rgba(255,255,255,.08)}
+#start>div{
+ position:relative;z-index:1;width:min(100%,620px);padding:clamp(30px,6vw,64px);
+ border:1px solid rgba(255,255,255,.15);border-radius:28px;
+ background:linear-gradient(145deg,rgba(22,49,74,.88),rgba(6,19,33,.88));
+ box-shadow:0 28px 90px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.08);
+ backdrop-filter:blur(14px)
+}
+#start h1{margin:0 0 16px;font-size:clamp(30px,5vw,54px);line-height:1.08;letter-spacing:-1.8px}
+#start h1:first-letter{color:var(--gold)}
+#start h2{margin:0 0 32px;color:#c4d2df;font-size:clamp(15px,2.2vw,20px);font-weight:400;letter-spacing:.4px}
+#start button{
+ padding:15px 30px;border:1px solid rgba(255,255,255,.24);border-radius:999px;
+ color:#182333;background:linear-gradient(135deg,var(--gold-light),var(--gold));
+ font-weight:800;font-size:14px;letter-spacing:1.4px;
+ box-shadow:0 9px 28px rgba(232,189,99,.22)
+}
+#hud{
+ position:absolute;top:16px;left:16px;z-index:3;min-width:250px;max-width:calc(100vw - 32px);
+ padding:16px 18px;border:1px solid rgba(255,255,255,.14);border-radius:18px;
+ color:var(--ink);line-height:1.75;
+ background:linear-gradient(145deg,rgba(8,24,41,.94),rgba(13,37,59,.88));
+ box-shadow:0 12px 36px rgba(0,0,0,.28);backdrop-filter:blur(12px)
+}
+#hud b{display:block;margin-bottom:5px;color:var(--gold-light);font-size:14px;letter-spacing:.4px}
+#hud button,#shop button{
+ padding:9px 13px;margin:5px 5px 0 0;border:1px solid rgba(255,255,255,.14);
+ border-radius:9px;background:linear-gradient(135deg,#23618d,#17466b);
+ color:white;font-size:13px;font-weight:700
+}
+#help{
+ position:absolute;bottom:16px;left:16px;z-index:3;padding:12px 16px;
+ border:1px solid rgba(255,255,255,.12);border-radius:13px;
+ background:rgba(7,20,34,.86);color:#dce7f1;font-size:12px;line-height:1.7;
+ box-shadow:0 8px 24px rgba(0,0,0,.22);backdrop-filter:blur(10px)
+}
+#shop{
+ display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+ z-index:5;width:min(520px,calc(100vw - 28px));max-height:min(82vh,760px);overflow:auto;
+ padding:26px;border:1px solid rgba(232,189,99,.28);border-radius:22px;
+ color:var(--ink);background:linear-gradient(150deg,rgba(15,36,57,.98),rgba(6,19,33,.98));
+ box-shadow:0 24px 90px rgba(0,0,0,.58),0 0 0 100vmax rgba(2,8,15,.56);
+ scrollbar-width:thin;scrollbar-color:#56718a transparent
+}
+#shop h2{margin:0 0 8px;color:var(--gold-light);font-size:25px;letter-spacing:-.5px}
+#shopDescription{margin:0 0 20px;color:var(--muted);font-size:13px;line-height:1.6}
+#shopItems{display:grid;gap:10px}
+#shopItems p{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ margin:0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;
+ background:rgba(255,255,255,.045);color:#edf3f8;font-size:14px
+}
+#shopItems>div{
+ padding:15px!important;margin:0!important;border:1px solid var(--line)!important;
+ border-radius:14px!important;background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.025))!important;
+ color:var(--ink)
+}
+#shopItems small{display:block;margin:6px 0;color:var(--muted);line-height:1.5}
+#shopItems button{margin-top:10px}
+#shopItems button:disabled{opacity:.42;cursor:not-allowed;transform:none}
+#shop .close{margin-top:18px;background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.18);color:#dce7f1}
+#message{min-height:18px;margin:14px 0 0;color:var(--gold-light);font-size:13px;font-weight:700}
+@media(max-width:600px){
+ #hud{top:8px;left:8px;min-width:0;padding:10px 12px;font-size:12px}
+ #hud b{font-size:12px}
+ #hud button{padding:7px 9px;font-size:11px}
+ #help{bottom:8px;left:8px;padding:8px 10px;font-size:11px}
+ #shop{padding:20px 16px;border-radius:18px}
+ #shop h2{font-size:21px}
+ #shopItems p{font-size:12px;padding:10px}
+}
+
+
+#shopItems .decor-card{display:block!important;padding:15px!important}
+#shopItems .decor-card strong{color:#ffe2a0;font-size:15px}
+#shopItems .decor-card .price{color:#e8bd63;font-weight:800;margin-top:7px}
+#shopItems .decor-card .detail{color:#a9b8c9;font-size:12px;margin-top:5px}
+#shopItems .decor-card button{margin-top:10px}
+
+
+#phone{display:none;position:absolute;inset:0;z-index:8;align-items:center;justify-content:center;padding:14px;background:rgba(2,8,15,.66);backdrop-filter:blur(7px)}
+.phone-shell{
+ position:relative;width:min(360px,calc(100vw - 28px));max-height:min(760px,92vh);overflow:auto;
+ padding:23px 19px 18px;border:5px solid #27384a;border-radius:38px;
+ background:linear-gradient(160deg,#102941,#071421 75%);color:#f4f7fb;
+ box-shadow:0 25px 90px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.1)
+}
+.phone-notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:88px;height:14px;border-radius:0 0 12px 12px;background:#030a11}
+.phone-status{display:flex;align-items:center;justify-content:space-between;margin:2px 3px 13px;padding:0 3px;color:#f4f7fb;font-size:11px;font-weight:700;letter-spacing:.2px}
+.phone-status-right{display:flex;align-items:center;gap:7px;color:#dce8f4;font-size:10px}
+.phone-signal{display:inline-flex;align-items:flex-end;gap:2px;height:12px}
+.phone-signal i{display:block;width:3px;border-radius:2px;background:#63e6a5}
+.phone-signal i:nth-child(1){height:4px}.phone-signal i:nth-child(2){height:6px}.phone-signal i:nth-child(3){height:9px}.phone-signal i:nth-child(4){height:12px}
+.phone-top{display:flex;align-items:center;justify-content:space-between;margin:5px 0 22px;color:#b9c8d7;font-size:10px;letter-spacing:1.3px}
+.phone-top button{width:28px;height:28px;border:1px solid rgba(255,255,255,.15);border-radius:50%;background:#1a334a;color:white;font-size:20px;line-height:1}
+.phone-greeting{padding:17px;border:1px solid rgba(232,189,99,.22);border-radius:18px;background:linear-gradient(135deg,rgba(232,189,99,.15),rgba(255,255,255,.035))}
+.phone-greeting small{color:#e8bd63;letter-spacing:1.4px;font-size:9px}
+.phone-greeting h2{margin:7px 0 2px;font-size:26px;letter-spacing:1.6px}
+.phone-greeting p{margin:0;color:#a9b8c9;font-size:12px}
+.phone-grid{display:grid;grid-template-columns:1fr;gap:10px;margin:22px 0}
+.phone-grid button{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-height:58px;padding:10px 14px;border:1px solid rgba(255,255,255,.1);border-radius:15px;background:rgba(255,255,255,.055);color:#eaf1f8;font-size:10px;font-weight:600}
+.phone-grid button:hover{border-color:rgba(232,189,99,.5);background:rgba(232,189,99,.12)}
+.phone-grid button span{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#254d6d,#142b42);color:#ffe2a0;font-size:21px}
+.phone-bottom{display:flex;justify-content:center;padding-top:5px}
+.phone-bottom span{width:76px;height:4px;border-radius:5px;background:rgba(255,255,255,.38)}
+@media(max-width:420px){.phone-grid{gap:9px 6px}.phone-grid button{font-size:9px}}
+
+
+/* NEXTORIA welcome and character creator */
+#start{overflow-y:auto;align-items:flex-start}
+.welcome-wrap{position:relative;z-index:1;width:min(100%,680px);margin:auto;padding:28px 0 34px;text-align:left}
+.welcome-brand{text-align:center;color:var(--gold-light);font-size:clamp(28px,5vw,42px);font-weight:900;letter-spacing:3px}
+.welcome-tagline{text-align:center;color:#a9b8c9;font-size:10px;letter-spacing:4px;margin:6px 0 22px}
+.welcome-progress{height:4px;border-radius:10px;background:rgba(255,255,255,.12);overflow:hidden;margin:0 0 18px}
+.welcome-progress span{display:block;width:25%;height:100%;background:linear-gradient(90deg,#c28b38,#ffe2a0);transition:width .35s ease}
+.welcome-page{display:none;padding:clamp(20px,4vw,34px);border:1px solid rgba(232,189,99,.24);border-radius:25px;background:linear-gradient(145deg,rgba(20,47,72,.97),rgba(5,17,30,.97));box-shadow:0 25px 80px rgba(0,0,0,.45)}
+.welcome-page.active{display:block;animation:welcomeIn .35s ease}
+@keyframes welcomeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.welcome-kicker{color:var(--gold);font-size:10px;font-weight:800;letter-spacing:2px}
+.welcome-page h1{margin:9px 0;color:#fff;font-size:clamp(25px,4vw,36px);letter-spacing:-.8px;line-height:1.15}
+.welcome-copy{margin:0 0 22px;color:#b5c5d4;font-size:13px;line-height:1.65}
+.welcome-form{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.welcome-form label,.character-grid label{display:grid;gap:7px;color:#dbe6ef;font-size:11px;font-weight:700;letter-spacing:.3px}
+.welcome-form input,.character-grid select{width:100%;min-width:0;padding:12px 13px;border:1px solid rgba(255,255,255,.14);border-radius:11px;background:#0a1b2c;color:#f6f8fb;outline:none;font:inherit;font-size:13px}
+.welcome-form input:focus,.character-grid select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,189,99,.12)}
+.gold-action{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 18px;border:0;border-radius:12px;background:linear-gradient(135deg,#ffe2a0,#dca84e);color:#182333;font-size:12px;font-weight:900;letter-spacing:1px;box-shadow:0 8px 25px rgba(232,189,99,.17)}
+.welcome-form .gold-action{grid-column:1/-1;margin-top:5px}
+.welcome-switch{text-align:center;color:#afbdcb;font-size:12px;margin:17px 0 0}
+.welcome-switch button{border:0;background:none;color:var(--gold-light);font-weight:800;text-decoration:underline}
+.demo-note{text-align:center;color:#8297aa;font-size:10px;line-height:1.5;margin:16px 0 0}
+.welcome-error{min-height:18px;color:#ffb6a9;font-size:12px;text-align:center;margin:10px 0 0}
+.avatar-preview{display:flex;flex-direction:column;align-items:center;gap:5px;padding:15px;margin:0 0 17px;border:1px solid rgba(232,189,99,.2);border-radius:16px;background:radial-gradient(circle at 50% 20%,rgba(232,189,99,.15),transparent 65%),rgba(255,255,255,.025)}
+.avatar-preview div{font-size:55px;line-height:1.2}.avatar-preview strong{color:#fff;font-size:14px}.avatar-preview small{color:#a9b8c9;font-size:10px}
+.choice-block{margin:12px 0}.choice-title{display:block;color:#dbe6ef;font-size:11px;font-weight:800;margin-bottom:8px}
+.choice-row{display:flex;gap:9px}.choice{flex:1;padding:10px;border:1px solid rgba(255,255,255,.15);border-radius:10px;background:rgba(255,255,255,.05);color:#e8eef5;font-weight:700;font-size:12px}.choice.selected{border-color:var(--gold);background:rgba(232,189,99,.16);color:var(--gold-light)}
+.character-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.character-grid select{appearance:auto}
+.welcome-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px}.quiet-action{padding:12px 15px;border:1px solid rgba(255,255,255,.16);border-radius:11px;background:rgba(255,255,255,.06);color:#dce7f1;font-size:12px;font-weight:700}
+.generation-legend{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.generation-legend div{display:grid;gap:5px;padding:13px;border:1px solid rgba(232,189,99,.2);border-radius:13px;background:rgba(255,255,255,.04);text-align:center}.generation-legend b{font-size:11px;color:var(--gold-light);letter-spacing:1.5px}.generation-legend strong{font-size:17px;color:white}.generation-legend small{font-size:10px;color:#a9b8c9}
+.wheel-pointer{text-align:center;color:var(--gold-light);font-size:22px;margin:0 0 -4px;position:relative;z-index:2}.wheel-wrap{position:relative;width:210px;height:210px;margin:0 auto 17px}.generation-wheel{position:absolute;inset:0;border-radius:50%;border:7px solid #f3d18b;background:conic-gradient(#174c70 0 50%,#d69e45 50% 100%);display:flex;align-items:center;justify-content:space-around;box-shadow:0 12px 35px rgba(0,0,0,.35);transition:transform 2.8s cubic-bezier(.12,.72,.12,1)}.generation-wheel span{width:50%;text-align:center;color:#fff;font-weight:900;font-size:16px;text-shadow:0 2px 5px #000;transform:rotate(-45deg)}.generation-wheel span+span{transform:rotate(135deg)}.wheel-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:48px;height:48px;border-radius:50%;border:4px solid #f3d18b;background:#0c2034;color:var(--gold-light);font-weight:900;box-shadow:0 3px 10px #0008}
+.spin-action{width:min(100%,300px);margin:0 auto;justify-content:center}.generation-result{text-align:center;color:#dce7f1;font-size:13px;min-height:22px;margin:15px 0 0}.generation-result strong{color:var(--gold-light);font-size:17px}.enter-action{width:100%;margin-top:16px;justify-content:center}
+@media(max-width:560px){.welcome-wrap{padding:18px 0}.welcome-page{padding:20px 16px}.welcome-form,.character-grid{grid-template-columns:1fr}.welcome-form .gold-action{grid-column:1}.welcome-brand{letter-spacing:2px}.wheel-wrap{width:185px;height:185px}}
+
+</style>
+</head>
+<body>
+
+<div id="start">
+ <div class="welcome-wrap">
+  <div class="welcome-brand">🌍 NEXTORIA</div>
+  <div class="welcome-tagline">THE FUTURE BEGINS HERE</div>
+  <div class="welcome-progress"><span id="progressFill"></span></div>
+  <section class="welcome-page active" id="accountPage">
+   <div class="welcome-kicker">WELCOME TO A NEW WORLD</div>
+   <h1 id="accountHeading">Create your account</h1>
+   <p class="welcome-copy" id="accountCopy">Your story starts with you. Create your player account to enter NEXTORIA.</p>
+   <form id="signupForm" class="welcome-form">
+    <label>Character name<input id="characterNameInput" required maxlength="24" placeholder="What should your character be called?"></label>
+    <label>Username<input id="signupUsername" required minlength="3" maxlength="20" autocomplete="username" placeholder="Choose a username"></label>
+    <label>Password<input id="signupPassword" required minlength="6" type="password" autocomplete="new-password" placeholder="At least 6 characters"></label>
+    <label>Date of birth<input id="birthDate" required type="date"></label>
+    <label>Email<input id="signupEmail" required type="email" autocomplete="email" placeholder="you@example.com"></label>
+    <button class="gold-action" type="submit">CREATE ACCOUNT <span>→</span></button>
+   </form>
+   <p class="welcome-switch" id="signupSwitch">Already have an account? <button type="button" onclick="showLogin()">Log in</button></p>
+   <form id="loginForm" class="welcome-form" style="display:none">
+    <label>Username<input id="loginUsername" required autocomplete="username" placeholder="Your username"></label>
+    <label>Password<input id="loginPassword" required type="password" autocomplete="current-password" placeholder="Your password"></label>
+    <button class="gold-action" type="submit">LOG IN <span>→</span></button>
+   </form>
+   <p class="welcome-switch" id="loginSwitch" style="display:none">New here? <button type="button" onclick="showSignup()">Sign up</button></p>
+   <p class="demo-note">Prototype mode: use made-up test details. This demo does not create a secure online account.</p>
+   <p class="welcome-error" id="accountError" aria-live="polite"></p>
+  </section>
+
+  <section class="welcome-page" id="characterPage">
+   <div class="welcome-kicker">STAGE 02 · BUILD YOUR IDENTITY</div>
+   <h1>Create your character</h1>
+   <p class="welcome-copy">Choose the look and style your character will bring into the city.</p>
+   <div class="avatar-preview"><div id="avatarFace">👨🏿</div><strong id="previewName">Your character</strong><small id="previewLook">Choose your style below</small></div>
+   <div class="choice-block"><span class="choice-title">Character style</span><div class="choice-row" id="genderChoices"><button type="button" class="choice selected" data-value="Male">Male</button><button type="button" class="choice" data-value="Female">Female</button></div></div>
+   <div class="character-grid">
+    <label>Skin tone<select id="skinChoice"><option value="Dark">Dark</option><option value="Deep brown">Deep brown</option><option value="Brown" selected>Brown</option><option value="Light">Light</option><option value="Caramel">Caramel</option></select></label>
+    <label>Head shape<select id="headChoice"><option>Round</option><option>Square</option><option>Strong jaw</option></select></label>
+    <label>Hairstyle<select id="hairChoice"></select></label>
+    <label>Outfit<select id="outfitChoice"></select></label>
+    <label>Body style<select id="bodyChoice"><option>Compact build</option><option>Broad build</option><option>Tall build</option><option>Slender build</option><option>Rounded build</option><option>Balanced build</option><option>Curved silhouette</option><option>Angular silhouette</option></select></label>
+   </div>
+   <div class="welcome-actions"><button class="quiet-action" type="button" onclick="backToAccount()">← Back</button><button class="gold-action" type="button" onclick="continueToGeneration()">CONTINUE <span>→</span></button></div>
+   <p class="welcome-error" id="characterError" aria-live="polite"></p>
+  </section>
+
+  <section class="welcome-page" id="generationPage">
+   <div class="welcome-kicker">STAGE 03 · YOUR BEGINNING</div>
+   <h1>Every Nextorian is born into something.</h1>
+   <p class="welcome-copy">Spin the wheel and discover the generation your character starts in.</p>
+   <div class="generation-legend"><div><b>GEN Z</b><strong>₦100,000,000</strong><small>FREE starter funds</small></div><div><b>GEN X</b><strong>₦50,000,000</strong><small>NEXTCREDIT starter loan</small></div></div>
+   <div class="wheel-pointer">▼</div><div class="wheel-wrap"><div class="generation-wheel" id="generationWheel"><span>GEN Z</span><span>GEN X</span></div><div class="wheel-center">N</div></div>
+   <button class="gold-action spin-action" id="spinButton" type="button" onclick="spinGeneration()">SPIN THE WHEEL ✦</button>
+   <p class="generation-result" id="generationResult" aria-live="polite">Your NEXTORIA story is waiting...</p>
+   <button class="gold-action enter-action" id="enterGameButton" type="button" onclick="enterNextoria()" style="display:none">ENTER NEXTORIA →</button>
+  </section>
+ </div>
+</div>
+<div id="hud" style="display:none">
+ <b>🌍 NEXTORIA – Your future begins here</b><br>
+ Character: Chukwudi<br>
+ Money: ₦<span id="money">5,000,000</span><br>
+ <button onclick="togglePhone()">📱 NEXTORIA PHONE (P)</button>
+</div>
+
+
+<div id="phone" aria-label="NEXTORIA Phone">
+ <div class="phone-shell">
+  <div class="phone-notch"></div>
+  <div class="phone-status">
+   <span><span id="phoneTime">--:--</span> <span id="phoneDate">--</span></span>
+   <span class="phone-status-right"><span>5G</span><span class="phone-signal" aria-label="5G signal"><i></i><i></i><i></i><i></i></span><span>▰</span></span>
+  </div>
+  <div class="phone-top">
+   <span>● NEXTORIA MOBILE</span>
+   <button onclick="togglePhone()" aria-label="Close phone">×</button>
+  </div>
+  <div class="phone-greeting">
+   <small>YOUR CITY. YOUR LIFE.</small>
+   <h2>NEXTORIA</h2>
+   <p>Choose an app to continue.</p>
+  </div>
+  <div class="phone-grid">
+   <button onclick="phoneApp('wallet')"><span>₦</span>Wallet</button>
+   <button onclick="phoneApp('send')"><span>↗️</span>Send Money</button>
+   <button onclick="phoneApp('credit')"><span>🏦</span>NEXTCREDIT</button>
+   <button onclick="phoneApp('inventory')"><span>🎒</span>Inventory</button>
+   <button onclick="phoneApp('jobs')"><span>💼</span>Jobs</button>
+   <button onclick="phoneApp('decor')"><span>🛋️</span>Decor Mode</button>
+   <button onclick="phoneApp('supermarket')"><span>🛒</span>Shopping</button>
+   <button onclick="phoneApp('fashion')"><span>👕</span>Fashion</button>
+   <button onclick="phoneApp('autos')"><span>🚘</span>Autos</button>
+   <button onclick="phoneApp('map')"><span>🗺️</span>City Map</button>
+   <button onclick="phoneApp('travel')"><span>✈️</span>Travel & Flights</button>
+   <button onclick="phoneApp('property')"><span>🏠</span>Properties</button>
+   <button onclick="phoneApp('social')"><span>💬</span>Social</button>
+   <button onclick="phoneApp('world')"><span>🌦️</span>World & Weather</button>
+  </div>
+  <div class="phone-bottom"><span></span></div>
+ </div>
+</div>
+
+<div id="help" style="display:none">
+ Arrow keys = Move / Drive<br>
+ E = Enter car or open shop
+</div>
+
+<div id="shop">
+ <h2 id="shopTitle"></h2>
+ <p id="shopDescription"></p>
+ <div id="shopItems"></div>
+ <p id="message"></p>
+ <button class="close" onclick="closeShop()">Close</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+<script>
+let scene,camera,renderer,player,car,playerBody,playerHead,playerHair,playerSun;
+let money=5000000,inventory=[],carsOwned=[];
+let loanBalance=0,virtualTransfers=[];
+let driving=false,shopOpen=false,gameStarted=false;
+let keys={},doors=[],currentShop=null,phoneOpen=false;
+let cityState="Delta State",localArea="Warri South",animationRunning=false;
+const stateAreas={
+ "Delta State":["Aniocha South","Bomadi","Burutu","Ethiope East","Ethiope West","Ika North East","Ika South","Isoko North","Isoko South","Ndokwa East","Ndokwa West","Okpe","Oshimili North","Oshimili South","Patani","Sapele","Udu","Ughelli North","Ughelli South","Ukwuani","Uvwie","Warri North","Warri South","Warri South West"],
+ "Portharcourt":["Abua/Odual","Ahoada East","Ahoada West","Akuku-Toru","Andoni","Asari-Toru","Bonny","Degema","Eleme","Emohua","Etche","Gokana","Ikwerre","Khana","Obio/Akpor","Ogba/Egbema/Ndoni","Ogu/Bolo","Okrika","Omuma","Opobo/Nkoro","Oyigbo","Port Harcourt","Tai"],
+ "Lagos":["Agege","Ajeromi-Ifelodun","Alimosho","Amuwo-Odofin","Apapa","Badagry","Epe","Eti-Osa","Ibeju-Lekki","Ifako-Ijaiye","Ikeja","Ikorodu","Kosofe","Lagos Island","Lagos Mainland","Mushin","Ojo","Oshodi-Isolo","Shomolu","Surulere"]
+};
+let ownedProperties=[],worldWeather='Sunny',worldClockMinutes=9*60,worldLastTick=Date.now();
+let worldEvent='Welcome to NEXTORIA!';
+
+const food=[
+ ["Bread",1500],["Milk",2500],["Soft drink",1000],
+ ["Rice",8000],["Biscuits",1200],["Chocolate",1800],
+ ["Water",500],["Cooking oil",4500]
+];
+
+const clothes=[
+ ["Blue T-shirt",12000,0x1769aa],
+ ["Red T-shirt",12000,0xcc2222],
+ ["Black T-shirt",15000,0x171717],
+ ["White T-shirt",15000,0xffffff],
+ ["Designer trousers",25000,0x333355],
+ ["Sneakers",35000,0xffffff],
+ ["Black cap",8000,0x111111]
+];
+
+const dealership=[
+ ["NTRUDER City Compact",850000,0x42a5f5,"compact"],
+ ["NTRUDER Sedan",2500000,0x1769dd,"sedan"],
+ ["NTRUDER Executive",3800000,0x202a44,"sedan"],
+ ["NTRUDER Sport GT",4800000,0xcc2222,"sport"],
+ ["NTRUDER Supercar X",8500000,0xffc400,"sport"],
+ ["NTRUDER SUV",5000000,0x222222,"suv"],
+ ["NTRUDER Family SUV",5600000,0x6d747d,"suv"],
+ ["NTRUDER Pickup 4x4",4200000,0x27734a,"pickup"],
+ ["NTRUDER Luxury Van",3900000,0xeeeeee,"van"],
+ ["NTRUDER Electric E1",6200000,0x18a999,"compact"],
+ ["NTRUDER Classic Coupe",3100000,0x8b4513,"sport"],
+ ["NTRUDER Police Cruiser",4500000,0xffffff,"sedan"],
+ ["NTRUDER Taxi",1800000,0xffd21f,"sedan"],
+ ["Lamborghini Aventador",18500000,0xf2c300,"supercar"],
+ ["Bugatti Chiron",32000000,0x1747a6,"supercar"],
+ ["Mercedes-Benz GLE",14500000,0x252525,"luxurySUV"],
+ ["Mercedes-Benz G-Class (G-Wagon)",22000000,0x58634a,"gclass"],
+ ["Porsche 911 Carrera",26500000,0xb52b2b,"sport"],
+ ["Range Rover Sport",28500000,0x202020,"luxurySUV"],
+ ["Toyota Land Cruiser",19500000,0x777777,"luxurySUV"],
+ ["Tesla Model S",24000000,0xc9d1d9,"sedan"],
+ ["NTRUDER Roadster",12500000,0x12a6a6,"sport"]
+];
+
+
+function updatePhoneClock(){
+ const now=new Date();
+ const time=document.getElementById("phoneTime");
+ const date=document.getElementById("phoneDate");
+ if(time)time.textContent=now.toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit",hour12:true});
+ if(date)date.textContent=now.toLocaleDateString("en-NG",{day:"2-digit",month:"short"});
+}
+updatePhoneClock();
+setInterval(updatePhoneClock,1000);
+
+function togglePhone(){
+ if(!gameStarted)return;
+ phoneOpen=!phoneOpen;
+ document.getElementById("phone").style.display=phoneOpen?"flex":"none";
+ if(phoneOpen){
+  shopOpen=false;
+  document.getElementById("shop").style.display="none";
+ }
+}
+function phoneApp(app){
+ phoneOpen=false;
+ document.getElementById("phone").style.display="none";
+ if(app==="wallet"){
+  shopOpen=true;currentShop="wallet";
+  document.getElementById("shop").style.display="block";
+  document.getElementById("shopTitle").innerText="₦ YOUR WALLET";
+  document.getElementById("shopDescription").innerText="Your current NEXTORIA balance.";
+  document.getElementById("shopItems").innerHTML=
+   `<div class="decor-card"><strong>Available balance</strong><div class="price">₦${money.toLocaleString("en-NG")}</div><div class="detail">NEXTCREDIT loan balance: ₦${loanBalance.toLocaleString("en-NG")}</div></div><button class="gold-action" style="margin:8px 0;width:100%" onclick="openSendMoney()">↗️ Send Money</button><button class="quiet-action" style="width:100%" onclick="phoneApp('credit')">🏦 Open NEXTCREDIT</button><div class="decor-card"><strong>Recent transfers</strong>${virtualTransfers.length?virtualTransfers.slice(-5).reverse().map(t=>`<div class="detail">Sent ₦${t.amount.toLocaleString("en-NG")} to ${escapeTransferName(t.name)}</div>`).join(""):`<div class="detail">No transfers yet.</div>`}</div>`;
+  document.getElementById("message").innerText="";
+ }else if(app==="send")openSendMoney();
+ else if(app==="credit")openNextCredit();
+ else if(app==="inventory")showInventory();
+ else if(app==="jobs")openJobs();
+ else if(app==="decor")openDecorMode();
+ else if(app==="supermarket")openShop("supermarket");
+ else if(app==="fashion")openShop("fashion");
+ else if(app==="autos")openShop("autos");
+ else if(app==="map")openAreaMap();
+ else if(app==="travel")openTravelApp();
+ else if(app==="property")openProperties();
+ else if(app==="social")openSocial();
+ else if(app==="world")openWorldControls();
+}
+
+function openTravelApp(){
+ shopOpen=true;currentShop="travel";
+ document.getElementById("shop").style.display="block";
+ document.getElementById("shopTitle").innerText="✈️ NEXTORIA TRAVEL & FLIGHTS";
+ document.getElementById("shopDescription").innerText="Choose your destination. Your character will fly after the virtual ticket is paid for.";
+ const destinations=[
+  {name:"Delta State",fare:25000,emoji:"🌴",note:"Explore Delta's towns and local government areas"},
+  {name:"Portharcourt",fare:45000,emoji:"🌊",note:"Explore Rivers State's local government areas"},
+  {name:"Lagos",fare:60000,emoji:"🌆",note:"Explore Lagos mainland, island and local government areas"}
+ ];
+ document.getElementById("shopItems").innerHTML=destinations.map(d=>`<div class="decor-card"><strong>${d.emoji} ${d.name}</strong><div class="detail">${d.note}</div><div class="price">Flight ticket: ₦${d.fare.toLocaleString("en-NG")}</div>${cityState===d.name?'<button disabled>Current destination</button>':`<button onclick="travelToState('${d.name}',${d.fare})">Buy ticket & fly</button>`}</div>`).join("")+`<div class="detail">Current location: <b>${cityState}</b></div>`;
+ document.getElementById("shopItems").innerHTML+=`<div class="detail">📍 Current area: <b>${localArea}</b></div>`;
+ document.getElementById("message").innerText="Flights use virtual Naira only; no real payment is made.";
+}
+function openAreaMap(){
+ shopOpen=true;currentShop="map";
+ document.getElementById("shop").style.display="block";
+ document.getElementById("shopTitle").innerText="🗺️ NEXTORIA AREA MAP";
+ document.getElementById("shopDescription").innerText="Choose a local government area in "+cityState+".";
+ const areas=stateAreas[cityState]||[];
+ document.getElementById("shopItems").innerHTML=
+  `<div class="decor-card"><strong>📍 Current destination: ${cityState}</strong><div class="detail">Current area: ${localArea}</div><label for="nextoriaArea" class="detail">Choose a local government area</label><select id="nextoriaArea" style="width:100%;padding:12px;border-radius:9px;margin:8px 0">${areas.map(a=>`<option value="${a}" ${a===localArea?"selected":""}>${a}</option>`).join("")}</select><button class="gold-action" style="width:100%" onclick="selectLocalArea()">Go to selected area</button></div>
+  <div class="decor-card"><strong>Places around NEXTORIA</strong><div class="detail">🏠 Residential estates and houses</div><div class="detail">🏥 NEXTORIA Hospital</div><div class="detail">🎓 NEXTORIA Academy</div><div class="detail">🏦 NEXTORIA Bank</div><div class="detail">🛒 Supermarket</div><div class="detail">🚘 NTRUDER Autos</div><div class="detail">✈️ NEXTORIA International Airport</div></div>`;
+ document.getElementById("message").innerText="Select an area to update your character's local destination.";
+}
+function selectLocalArea(){
+ const picker=document.getElementById("nextoriaArea");if(!picker)return;
+ localArea=picker.value;
+ const hud=document.getElementById("hudLocation");if(hud)hud.textContent=cityState+" · "+localArea;
+ openAreaMap();msg("Your selected area is now "+localArea+", "+cityState+".");
+}
+function travelToState(destination,fare){
+ if(destination===cityState)return msg("You are already in "+destination+".");
+ if(money<fare)return msg("You need ₦"+fare.toLocaleString("en-NG")+" for this flight ticket.");
+ money-=fare;updateMoney();
+ const oldCanvas=renderer&&renderer.domElement;
+ if(renderer){renderer.dispose();if(oldCanvas&&oldCanvas.parentNode)oldCanvas.parentNode.removeChild(oldCanvas);}
+ cityState=destination;
+ localArea=stateAreas[cityState][0];
+ doors=[];carsOwned=[];driving=false;shopOpen=false;
+ document.getElementById("shop").style.display="none";
+ makeCity();
+ const loc=document.getElementById("hudLocation");if(loc)loc.textContent=cityState+" · "+localArea;
+ msg("Welcome to "+cityState+"! Your flight has arrived. Ticket paid: ₦"+fare.toLocaleString("en-NG"));
+}
+
+function escapeTransferName(value){
+ return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+function openSendMoney(){
+ shopOpen=true;currentShop="send";
+ document.getElementById("shop").style.display="block";
+ document.getElementById("shopTitle").innerText="↗️ SEND MONEY";
+ document.getElementById("shopDescription").innerText="Send virtual NEXTORIA money to another character. This does not send real money.";
+ document.getElementById("shopItems").innerHTML=`<div class="decor-card"><strong>Your available balance</strong><div class="price">₦${money.toLocaleString("en-NG")}</div></div><label style="display:block;margin:12px 0 6px">Recipient's character name<input id="transferRecipient" type="text" maxlength="30" placeholder="e.g. Ada" style="display:block;width:100%;padding:12px;margin-top:6px;border-radius:9px;border:1px solid #9aa8b8"></label><label style="display:block;margin:12px 0 6px">Amount (₦)<input id="transferAmount" type="number" min="1" max="${money}" step="1" placeholder="Enter amount" style="display:block;width:100%;padding:12px;margin-top:6px;border-radius:9px;border:1px solid #9aa8b8"></label><button class="gold-action" style="width:100%;margin-top:10px" onclick="sendVirtualMoney()">CONFIRM SEND</button>`;
+ document.getElementById("message").innerText="";
+}
+function sendVirtualMoney(){
+ const recipient=document.getElementById("transferRecipient").value.trim();
+ const amount=Number(document.getElementById("transferAmount").value);
+ const message=document.getElementById("message");
+ if(!recipient){message.innerText="Enter the recipient's character name.";return;}
+ if(!Number.isSafeInteger(amount)||amount<=0){message.innerText="Enter a valid whole-number amount.";return;}
+ if(amount>money){message.innerText="Insufficient virtual funds.";return;}
+ money-=amount;
+ virtualTransfers.push({name:recipient,amount,when:new Date().toLocaleString("en-NG")});
+ const hudMoney=document.getElementById("money");if(hudMoney)hudMoney.textContent=money.toLocaleString("en-NG");
+ message.innerText=`Successfully sent ₦${amount.toLocaleString("en-NG")} to ${recipient} in NEXTORIA.`;
+ openSendMoney();
+ document.getElementById("message").innerText=`Successfully sent ₦${amount.toLocaleString("en-NG")} to ${recipient} in NEXTORIA.`;
+}
+function openNextCredit(){
+ shopOpen=true;currentShop="credit";
+ document.getElementById("shop").style.display="block";
+ document.getElementById("shopTitle").innerText="🏦 NEXTCREDIT";
+ document.getElementById("shopDescription").innerText="A fictional in-game finance app. No real money or real loan is involved.";
+ const details=selectedGeneration==="Gen X"?`<div class="decor-card"><strong>Gen X starter loan</strong><div class="price">₦50,000,000</div><div class="detail">Virtual loan issued when your character entered NEXTORIA.</div><div class="detail">Outstanding game loan: ₦${loanBalance.toLocaleString("en-NG")}</div></div>`:`<div class="decor-card"><strong>Gen Z starter gift</strong><div class="price">₦100,000,000</div><div class="detail">Your starter funds are a free gift. No loan repayment is due.</div></div>`;
+ document.getElementById("shopItems").innerHTML=details+`<div class="decor-card"><strong>Account type</strong><div class="detail">NEXTORIA virtual account · Not connected to any bank or payment network.</div></div>`;
+ document.getElementById("message").innerText="";
+}
+
+let demoAccount=null;
+let selectedGender="Male";
+let selectedGeneration=null;
+let characterProfile={name:"Chukwudi",gender:"Male",skin:"Brown",head:"Round",hair:"Low cut",outfit:"Shirt and shorts",body:"Balanced build"};
+const hairOptions={Male:["Taper fade","Round cut","Low cut","Baldy","Afro"],Female:["Bone straight","Pixie curls","All back","Ghana weaving","Two puffed buns (two shuku)","Jada Wader braids"]};
+const outfitOptions={Male:["Boy crop top and baggy jeans","Shirt and shorts","Jalabia and cap","Native wear","Office wear","Corporate two-piece"],Female:["Bubu gown","Adire baggy","Crop top and palazzo","Floral dress","Mini skirt and crop top","Ruffle skirt","Pencil skirt","Pleated skirt"]};
+function showWelcomePage(id,progress){
+ document.querySelectorAll(".welcome-page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.getElementById("progressFill").style.width=progress+"%";
+}
+function showLogin(){
+ document.getElementById("accountHeading").textContent="Welcome back";
+ document.getElementById("accountCopy").textContent="Log in with your NEXTORIA username and password.";
+ document.getElementById("signupForm").style.display="none";
+ document.getElementById("signupSwitch").style.display="none";
+ document.getElementById("loginForm").style.display="grid";
+ document.getElementById("loginSwitch").style.display="block";
+ document.getElementById("accountError").textContent="";
+}
+function showSignup(){
+ document.getElementById("accountHeading").textContent="Create your account";
+ document.getElementById("accountCopy").textContent="Your story starts with you. Create your player account to enter NEXTORIA.";
+ document.getElementById("signupForm").style.display="grid";
+ document.getElementById("signupSwitch").style.display="block";
+ document.getElementById("loginForm").style.display="none";
+ document.getElementById("loginSwitch").style.display="none";
+ document.getElementById("accountError").textContent="";
+}
+document.getElementById("signupForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const username=document.getElementById("signupUsername").value.trim();
+ const password=document.getElementById("signupPassword").value;
+ const email=document.getElementById("signupEmail").value.trim();
+ const dob=document.getElementById("birthDate").value;
+ const name=document.getElementById("characterNameInput").value.trim();
+ if(!name||!username||!password||!email||!dob){document.getElementById("accountError").textContent="Please complete every field.";return;}
+ if(password.length<6){document.getElementById("accountError").textContent="Please use at least 6 characters for this demo password.";return;}
+ demoAccount={username,password,email,dob,characterName:name};
+ characterProfile.name=name;
+ document.getElementById("previewName").textContent=name;
+ document.getElementById("accountError").textContent="";
+ prepareCharacterChoices();
+ showWelcomePage("characterPage",55);
+});
+document.getElementById("loginForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const username=document.getElementById("loginUsername").value.trim();
+ const password=document.getElementById("loginPassword").value;
+ if(!demoAccount){document.getElementById("accountError").textContent="No demo account exists in this browser session yet. Please sign up first.";return;}
+ if(username!==demoAccount.username||password!==demoAccount.password){document.getElementById("accountError").textContent="That username or password doesn't match this demo account.";return;}
+ characterProfile.name=demoAccount.characterName;
+ document.getElementById("previewName").textContent=characterProfile.name;
+ prepareCharacterChoices();
+ showWelcomePage("characterPage",55);
+});
+function backToAccount(){showWelcomePage("accountPage",25);}
+function prepareCharacterChoices(){
+ const fill=(id,items)=>{document.getElementById(id).innerHTML=items.map(x=>`<option>${x}</option>`).join("");};
+ fill("hairChoice",hairOptions[selectedGender]);fill("outfitChoice",outfitOptions[selectedGender]);
+ document.getElementById("previewName").textContent=characterProfile.name;
+ updateAvatarPreview();
+}
+document.querySelectorAll("#genderChoices .choice").forEach(btn=>btn.addEventListener("click",()=>{
+ selectedGender=btn.dataset.value;
+ document.querySelectorAll("#genderChoices .choice").forEach(b=>b.classList.toggle("selected",b===btn));
+ prepareCharacterChoices();
+}));
+["skinChoice","headChoice","hairChoice","outfitChoice","bodyChoice"].forEach(id=>document.getElementById(id).addEventListener("change",updateAvatarPreview));
+function updateAvatarPreview(){
+ const skin=document.getElementById("skinChoice").value;
+ const tone={"Dark":"🏿","Deep brown":"🏿","Brown":"🏾","Light":"🏼","Caramel":"🏽"}[skin]||"🏾";
+ const face=selectedGender==="Male"?"👨":"👩";
+ document.getElementById("avatarFace").textContent=face+tone;
+ const hair=document.getElementById("hairChoice").value;
+ document.getElementById("previewLook").textContent=selectedGender+" · "+skin+" · "+hair;
+ characterProfile={name:characterProfile.name,gender:selectedGender,skin,head:document.getElementById("headChoice").value,hair,outfit:document.getElementById("outfitChoice").value,body:document.getElementById("bodyChoice").value};
+}
+function continueToGeneration(){
+ updateAvatarPreview();
+ document.getElementById("characterError").textContent="";
+ showWelcomePage("generationPage",80);
+}
+function spinGeneration(){
+ const button=document.getElementById("spinButton");
+ const wheel=document.getElementById("generationWheel");
+ const result=document.getElementById("generationResult");
+ const enter=document.getElementById("enterGameButton");
+ if(button.disabled)return;
+ button.disabled=true;button.textContent="THE WHEEL IS SPINNING...";enter.style.display="none";result.textContent="Fate is choosing your beginning...";
+ const isGenZ=Math.random()<.5;
+ selectedGeneration=isGenZ?"Gen Z":"Gen X";
+ const extra=360*5+(isGenZ?225:45);
+ wheel.style.transform=`rotate(${extra}deg)`;
+ setTimeout(()=>{
+  const funds=isGenZ?100000000:50000000;
+  result.innerHTML=isGenZ?`You were born into <strong>Gen Z</strong>!<br>Free starter funds: <strong>₦${funds.toLocaleString("en-NG")}</strong>`:`You were born into <strong>Gen X</strong>!<br>NEXTCREDIT starter loan: <strong>₦${funds.toLocaleString("en-NG")}</strong>`;
+  button.style.display="none";
+  enter.style.display="flex";
+ },2900);
+}
+function applyCharacterAppearance(){
+ if(!player||!playerBody||!playerHead||!playerHair)return;
+ const skinColors={"Dark":0x3b2118,"Deep brown":0x58301f,"Brown":0x8b542f,"Light":0xc58a62,"Caramel":0xa9683f};
+ const skin=skinColors[characterProfile.skin]||0x8b542f;
+ playerHead.material.color.setHex(skin);
+ playerBody.material.color.setHex(characterProfile.gender==="Female"?0x9b4c86:0x1769aa);
+ playerHead.scale.set(characterProfile.head==="Square"?1.08:characterProfile.head==="Strong jaw"?1.04:1,1,1);
+ playerBody.scale.set(characterProfile.body==="Broad build"?1.22:characterProfile.body==="Compact build"?.9:1,characterProfile.body==="Tall build"?1.18:characterProfile.body==="Compact build"?.9:1,1);
+ playerHair.visible=characterProfile.hair!=="Baldy";
+ playerHair.material.color.setHex(0x17110e);
+ playerHair.scale.set(1,characterProfile.hair==="Afro"||characterProfile.hair==="Two puffed buns (two shuku)"?.85:.45,1);
+ playerHair.position.y=characterProfile.hair==="Afro"?2.32:2.25;
+}
+
+function enterNextoria(){
+ if(typeof THREE==="undefined"){alert("NEXTORIA could not load its 3D graphics. Check your internet connection and refresh.");return;}
+ cityState="Delta State";
+ money=selectedGeneration==="Gen Z"?100000000:50000000;
+ loanBalance=selectedGeneration==="Gen X"?50000000:0;
+ const moneyEl=document.getElementById("money");
+ if(moneyEl)moneyEl.textContent=money.toLocaleString("en-NG");
+ const hud=document.getElementById("hud");
+ hud.innerHTML=`<b>🌍 NEXTORIA – Your future begins here</b><br>Character: <span id="hudCharacterName"></span><br>Generation: ${selectedGeneration}<br>Location: <span id="hudLocation">Delta State</span><br>Money: ₦<span id="money">${money.toLocaleString("en-NG")}</span><br><button onclick="togglePhone()">📱 NEXTORIA PHONE (P)</button>`;
+ document.getElementById("hudCharacterName").textContent=characterProfile.name;
+ document.getElementById("start").style.display="none";
+ document.getElementById("hud").style.display="block";
+ document.getElementById("help").style.display="block";
+ makeCity();gameStarted=true;
+ const loc=document.getElementById("hudLocation");if(loc)loc.textContent=cityState+" · "+localArea;
+}
+function startGame(){showWelcomePage("accountPage",25);}
+
+function box(x,y,z,w,h,d,color){
+ let m=new THREE.Mesh(
+  new THREE.BoxGeometry(w,h,d),
+  new THREE.MeshStandardMaterial({color:color})
+ );
+ m.position.set(x,y,z);
+ scene.add(m);
+ return m;
+}
+
+function buildShop(x,z,color,name,label){
+ box(x,3,z,15,6,12,color);
+ box(x,6.3,z,16,.7,13,0x1769aa);
+
+ // Front sign
+ box(x,5.4,z+6.1,11,1.1,.3,0xffd43b);
+
+ let door=new THREE.Group();
+ door.position.set(x,0,z+6.15);
+
+ let panel=new THREE.Mesh(
+  new THREE.BoxGeometry(2.5,2.5,.2),
+  new THREE.MeshStandardMaterial({color:0x42a5f5})
+ );
+ panel.position.y=1.25;
+ door.add(panel);
+ scene.add(door);
+
+ doors.push({object:door,name:name,label:label});
+
+ // Windows
+ box(x-5,2.7,z+6.1,3,2.5,.2,0x7bd8ed);
+ box(x+5,2.7,z+6.1,3,2.5,.2,0x7bd8ed);
+}
+
+function makeCar(color,style="sedan"){
+ let g=new THREE.Group();
+ const specs={
+  compact:{body:[2.25,.72,3.35],roof:[1.65,.72,1.75],roofY:1.42,roofZ:-.15,wheelX:1.08,wheelZ:1.05},
+  sedan:{body:[2.5,.8,4],roof:[1.8,.8,2],roofY:1.5,roofZ:-.2,wheelX:1.2,wheelZ:1.3},
+  sport:{body:[2.55,.62,4.25],roof:[1.75,.58,1.8],roofY:1.32,roofZ:-.2,wheelX:1.22,wheelZ:1.4},
+  suv:{body:[2.65,1.0,4.25],roof:[2.05,.95,2.45],roofY:1.75,roofZ:-.1,wheelX:1.28,wheelZ:1.35},
+  pickup:{body:[2.65,.85,4.5],roof:[1.85,.85,1.8],roofY:1.55,roofZ:-.85,wheelX:1.28,wheelZ:1.5},
+  van:{body:[2.65,1.05,4.3],roof:[2.15,1.15,2.7],roofY:1.82,roofZ:-.05,wheelX:1.28,wheelZ:1.35},
+  supercar:{body:[2.65,.58,4.65],roof:[1.75,.48,1.75],roofY:1.22,roofZ:-.2,wheelX:1.27,wheelZ:1.48},
+  luxurySUV:{body:[2.75,1.02,4.55],roof:[2.1,.92,2.55],roofY:1.76,roofZ:-.12,wheelX:1.32,wheelZ:1.42},
+  gclass:{body:[2.8,1.15,4.25],roof:[2.35,1.18,2.5],roofY:1.95,roofZ:-.05,wheelX:1.34,wheelZ:1.35}
+ };
+ const v=specs[style]||specs.sedan;
+ let body=new THREE.Mesh(
+  new THREE.BoxGeometry(...v.body),
+  new THREE.MeshStandardMaterial({color:color})
+ );
+ body.position.y=.8;
+ g.add(body);
+
+ let roof=new THREE.Mesh(
+  new THREE.BoxGeometry(...v.roof),
+  new THREE.MeshStandardMaterial({color:color})
+ );
+ roof.position.set(0,v.roofY,v.roofZ);
+ g.add(roof);
+
+ for(let x of [-v.wheelX,v.wheelX]){
+  for(let z of [-v.wheelZ,v.wheelZ]){
+   let wheel=new THREE.Mesh(
+    new THREE.CylinderGeometry(.4,.4,.25,16),
+    new THREE.MeshStandardMaterial({color:0x111111})
+   );
+   wheel.rotation.z=Math.PI/2;
+   wheel.position.set(x,.5,z);
+   g.add(wheel);
+  }
+ }
+ return g;
+}
+
+function makeCity(){
+ scene=new THREE.Scene();
+ scene.background=new THREE.Color(cityState==="Delta State"?0x87ceeb:(cityState==="Portharcourt"?0x9bc9df:0xb7d9ed));
+
+ camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1000);
+ try{renderer=new THREE.WebGLRenderer({antialias:true});}
+ catch(err){msg("3D graphics could not start. Please enable browser hardware acceleration and try again.");return;}
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
+ renderer.setSize(innerWidth,innerHeight);
+ renderer.domElement.style.position="fixed";renderer.domElement.style.inset="0";renderer.domElement.style.zIndex="0";
+ document.body.appendChild(renderer.domElement);
+
+ scene.add(new THREE.HemisphereLight(0xffffff,0x555555,2));
+ let sun=new THREE.DirectionalLight(0xffffff,2);
+ sun.position.set(10,20,10);
+ scene.add(sun);playerSun=sun;
+
+ box(0,-.5,0,200,1,200,cityState==="Delta State"?0x399b45:(cityState==="Portharcourt"?0x398d70:0x8a9b78));
+ if(cityState==="Lagos"){
+  // Lagos-inspired lagoon edge and skyline landmark.
+  box(-76,-.05,0,38,.12,190,0x238bb8);
+  for(let i=0;i<7;i++){const h=12+(i%3)*7;box(-48+i*15,h/2,-78,8,h,8,[0xd6e0e8,0xc5d2df,0xe2d5c6][i%3]);}
+  box(35,5,-55,3,10,3,0xd8b45c);
+ }
+ if(cityState==="Portharcourt"){
+  // Waterfront and a simple landmark bridge give the second destination its own look.
+  box(-76,-.05,0,38,.12,190,0x258db5);
+  box(-76,2,18,38,.5,2,0xddd7c7);
+  for(let bx=-90;bx<=-62;bx+=14)box(bx,7,18,1,14,1,0xe8e1d1);
+ }
+
+ // Main street
+ box(0,.02,0,200,.05,14,0x333333);
+ box(0,.05,0,200,.02,.2,0xffffff);
+
+ // Side street
+ box(0,.02,25,14,.05,150,0x333333);
+
+ // Six houses
+ for(let i=0;i<6;i++){
+  let x=-48+i*13;
+  box(x,3,-35,9,6,9,[0xe6a15b,0xd9c5a2,0xc78d72][i%3]);
+  box(x,6.5,-35,10,1,10,0x9b2929);
+  let homeDoor=new THREE.Group();homeDoor.position.set(x,0,-29.85);
+  let homePanel=new THREE.Mesh(new THREE.BoxGeometry(2,2.5,.2),new THREE.MeshStandardMaterial({color:0x68452d}));homePanel.position.y=1.25;homeDoor.add(homePanel);scene.add(homeDoor);
+  doors.push({object:homeDoor,name:'property',label:'Residential Property '+(i+1),propertyIndex:i});
+ }
+ // New public locations along the extended city avenue
+ buildShop(-48,-67,0xd9e6ef,"hospital","NEXTORIA HOSPITAL");
+ buildShop(-16,-67,0xf0d58c,"school","NEXTORIA ACADEMY");
+ buildShop(16,-67,0xb8d7e8,"bank","NEXTORIA BANK");
+ buildShop(48,-67,0xd9b7a0,"cafe","CITY CAFE");
+ buildShop(0,-91,0xc5b3d9,"cinema","NEXTORIA CINEMA");
+
+ // Three shops on the same street
+ buildShop(-30,-12,0xe8e8e8,"supermarket","DELTA SUPERMARKET");
+ buildShop(0,-12,0xe7b8d1,"fashion","DELTA FASHION STORE");
+ buildShop(30,-12,0xcccccc,"autos","NTRUDER AUTOS");
+ // Airport terminal, runway and control tower in both destinations.
+ box(67,.02,66,92,.08,18,0x30343a);
+ for(let rx=25;rx<110;rx+=12)box(rx,.08,66,5,.025,.35,0xffffff);
+ buildShop(62,48,0xd9e5ed,"airport","NEXTORIA INTERNATIONAL AIRPORT");
+ box(88,5,48,5,10,5,0x7895aa);
+ box(88,10,48,5,.5,5,0xe8bd63);
+
+ // Supermarket shelves
+ for(let i=0;i<3;i++){
+  box(-35+i*5,1,-10,1,2,3,0x754c24);
+  box(-35+i*5,2,-8.5,.7,.5,.5,0xff3333);
+ }
+
+ // Fashion display
+ for(let i=0;i<4;i++){
+  box(-7+i*4,1.5,-10,.7,3,1,0x754c24);
+  box(-7+i*4,2.5,-9.4,1,1,.3,
+  [0xff3333,0x1769aa,0xffffff,0x111111][i]);
+ }
+
+ // NTRUDER AUTOS display vehicles
+ let display1=makeCar(0x1769dd);
+ display1.position.set(26,0,-22);
+ scene.add(display1);
+
+ let display2=makeCar(0xcc2222);
+ display2.position.set(34,0,-22);
+ scene.add(display2);
+
+ // Character
+ player=new THREE.Group();
+
+ playerBody=new THREE.Mesh(
+  new THREE.BoxGeometry(.8,1.3,.5),
+  new THREE.MeshStandardMaterial({color:0x1769aa})
+ );
+ playerBody.position.y=1;
+ player.add(playerBody);
+
+ playerHead=new THREE.Mesh(
+  new THREE.SphereGeometry(.42,16,16),
+  new THREE.MeshStandardMaterial({color:0x8b542f})
+ );
+ playerHead.position.y=2;
+ player.add(playerHead);
+
+ playerHair=new THREE.Mesh(
+  new THREE.SphereGeometry(.43,16,16),
+  new THREE.MeshStandardMaterial({color:0x17110e})
+ );
+ playerHair.scale.y=.45;
+ playerHair.position.y=2.25;
+ player.add(playerHair);
+
+ player.position.set(0,0,5);
+ scene.add(player);
+ applyCharacterAppearance();
+
+ car=makeCar(0x0759dd);
+ car.position.set(5,0,5);
+ scene.add(car);
+
+ camera.position.set(0,12,25);
+ camera.lookAt(0,0,-10);
+
+ animate();
+}
+
+function distance(a,b){
+ return a.position.distanceTo(b.position);
+}
+
+function openShop(type){
+ shopOpen=true;
+ currentShop=type;
+ document.getElementById("shop").style.display="block";
+ document.getElementById("message").innerText="";
+ let html="";
+
+ if(type==="supermarket"){
+  document.getElementById("shopTitle").innerText="🛒 DELTA SUPERMARKET";
+  document.getElementById("shopDescription").innerText="Buy food and drinks.";
+  food.forEach((p,i)=>{
+   html+=`<p>${p[0]} — ₦${p[1].toLocaleString()} <button onclick="buyFood(${i})">Buy</button></p>`;
+  });
+ }
+
+ if(type==="fashion"){
+  document.getElementById("shopTitle").innerText="👕 DELTA FASHION STORE";
+  document.getElementById("shopDescription").innerText="Choose Chukwudi's new style.";
+  clothes.forEach((p,i)=>{
+   html+=`<p>${p[0]} — ₦${p[1].toLocaleString()} <button onclick="buyClothes(${i})">Buy</button></p>`;
+  });
+ }
+
+ if(type==="property"){
+  const idx=doors.find(d=>d.name==='property' && d.propertyIndex!==undefined && distance(player,d.object)<8)?.propertyIndex ?? 0;
+  openProperties(idx);return;
+ }
+ const publicPlaces={hospital:['🏥 NEXTORIA HOSPITAL','Visit the city hospital. Doctor careers are available in NEXTORIA Careers.'],school:['🎓 NEXTORIA ACADEMY','A place for learning and future education features.'],bank:['🏦 NEXTORIA BANK','A city bank location. Your virtual wallet is available on the NEXTORIA Phone.'],cafe:['☕ CITY CAFE','A relaxing city cafe. Food service activities are planned for a future update.'],cinema:['🎬 NEXTORIA CINEMA','A place for entertainment and city events.'],airport:['✈️ NEXTORIA INTERNATIONAL AIRPORT','Book a virtual flight to another NEXTORIA destination using your in-game Naira.']};
+ if(type==="airport"){
+  document.getElementById("shopTitle").innerText="✈️ NEXTORIA INTERNATIONAL AIRPORT";
+  document.getElementById("shopDescription").innerText="Welcome to the airport. Flights are paid for with virtual Naira only.";
+  html='<div class="decor-card"><strong>Flight desk</strong><div class="detail">Open Travel & Flights on your phone to choose a destination and pay for your ticket.</div><button onclick="openTravelApp()">📱 Open flight booking</button></div>';
+ }
+ if(publicPlaces[type] && type!=="airport"){
+  document.getElementById("shopTitle").innerText=publicPlaces[type][0];
+  document.getElementById("shopDescription").innerText=publicPlaces[type][1];
+  html='<div class="decor-card"><strong>Welcome!</strong><div class="detail">This location is part of the expanded NEXTORIA city.</div></div>';
+ }
+ if(type==="autos"){
+  document.getElementById("shopTitle").innerText="🚗 NTRUDER AUTOS";
+  document.getElementById("shopDescription").innerText="Choose your next ride.";
+  dealership.forEach((p,i)=>{
+   html+=`<div class="decor-card"><strong>🚘 ${p[0]}</strong><div class="price">₦${p[1].toLocaleString()}</div><div class="detail">${p[3].toUpperCase()} CLASS · NTRUDER AUTOS</div><button onclick="buyCar(${i})">Buy car</button></div>`;
+  });
+  html+=`<button onclick="sellCar()">Sell a purchased car</button>`;
+ }
+
+ document.getElementById("shopItems").innerHTML=html;
+}
+
+function buyFood(i){
+ let p=food[i];
+ if(money<p[1])return msg("Not enough Naira!");
+ money-=p[1];
+ inventory.push({name:p[0],price:p[1],type:"food"});
+ updateMoney();
+ msg(p[0]+" purchased!");
+}
+
+function buyClothes(i){
+ let p=clothes[i];
+ if(money<p[1])return msg("Not enough Naira!");
+ money-=p[1];
+ inventory.push({name:p[0],price:p[1],type:"clothes"});
+ playerBody.material.color.setHex(p[2]);
+ updateMoney();
+ msg(p[0]+" purchased! Outfit changed.");
+}
+
+function buyCar(i){
+ let p=dealership[i];
+ if(money<p[1])return msg("Not enough Naira!");
+ money-=p[1];
+ let newCar=makeCar(p[2],p[3]);
+ newCar.position.set(30+carsOwned.length*5,0,-25);
+ scene.add(newCar);
+ carsOwned.push({object:newCar,name:p[0],price:p[1]});
+ updateMoney();
+ msg(p[0]+" purchased! Find it near the dealership.");
+}
+
+function sellCar(){
+ if(!carsOwned.length)return msg("You have no purchased cars to sell.");
+ let c=carsOwned.pop();
+ money+=Math.floor(c.price*.7);
+ scene.remove(c.object);
+ updateMoney();
+ msg(c.name+" sold!");
+}
+
+function showInventory(){
+ shopOpen=true;
+ currentShop="inventory";
+ document.getElementById("shop").style.display="block";
+ document.getElementById("shopTitle").innerText="🎒 YOUR INVENTORY";
+ document.getElementById("shopDescription").innerText="Items Chukwudi owns.";
+ let html="";
+ if(!inventory.length)html="<p>Your inventory is empty.</p>";
+ inventory.forEach((p,i)=>{
+  html+=`<p>${p.name} — ₦${p.price.toLocaleString()} <button onclick="sellItem(${i})">Sell</button></p>`;
+ });
+ document.getElementById("shopItems").innerHTML=html;
+ document.getElementById("message").innerText="";
+}
+
+function sellItem(i){
+ let p=inventory[i];
+ money+=Math.floor(p.price*.7);
+ inventory.splice(i,1);
+ updateMoney();
+ showInventory();
+ msg("Item sold!");
+}
+
+// NEXTORIA JOBS SYSTEM
+const availableJobs=[
+ {name:"Teacher",salary:25000,description:"Teach students and help them learn."},
+ {name:"Chef",salary:30000,description:"Prepare meals for customers."},
+ {name:"Police Officer",salary:40000,description:"Help keep the city safe."},
+ {name:"Banker",salary:45000,description:"Help customers with their banking."},
+ {name:"Doctor",salary:50000,description:"Care for patients at the city hospital."},
+ {name:"Business Owner",salary:35000,description:"Manage your own small business."}
+];
+let currentJob=null;
+
+// NEXTORIA DECOR MODE
+const interiorOptions=[
+ {id:"living",name:"Luxury Living Room",price:250000,description:"A stylish lounge for relaxing and entertaining."},
+ {id:"bedroom",name:"Master Bedroom",price:180000,description:"A comfortable private bedroom."},
+ {id:"kitchen",name:"Modern Kitchen",price:220000,description:"A fitted kitchen for preparing meals."},
+ {id:"bathroom",name:"Premium Bathroom",price:120000,description:"A clean, modern bathroom space."},
+ {id:"dining",name:"Elegant Dining Room",price:160000,description:"A dining space for family and guests."}
+];
+const decorFurniture=[
+ {id:"sofa",name:"Classic Sofa",price:85000,room:"living",kind:"sofa"},
+ {id:"tv",name:"Smart TV & Stand",price:145000,room:"living",kind:"tv"},
+ {id:"rug",name:"Designer Rug",price:35000,room:"living",kind:"rug"},
+ {id:"bed",name:"King-size Bed",price:180000,room:"bedroom",kind:"bed"},
+ {id:"wardrobe",name:"Luxury Wardrobe",price:125000,room:"bedroom",kind:"wardrobe"},
+ {id:"lamp",name:"Bedside Lamp",price:22000,room:"bedroom",kind:"lamp"},
+ {id:"kitchen-set",name:"Kitchen Cabinet Set",price:165000,room:"kitchen",kind:"cabinet"},
+ {id:"fridge",name:"Double-door Fridge",price:210000,room:"kitchen",kind:"fridge"},
+ {id:"stove",name:"Modern Cooker",price:95000,room:"kitchen",kind:"stove"},
+ {id:"bath",name:"Luxury Bathtub",price:175000,room:"bathroom",kind:"bath"},
+ {id:"sink",name:"Vanity Sink",price:65000,room:"bathroom",kind:"sink"},
+ {id:"shower",name:"Glass Shower",price:115000,room:"bathroom",kind:"shower"},
+ {id:"table",name:"Six-seat Dining Set",price:155000,room:"dining",kind:"table"},
+ {id:"cabinet",name:"Display Cabinet",price:90000,room:"dining",kind:"wardrobe"}
+];
+let ownedInteriors=[],ownedFurniture={},insideInterior=false,activeInterior=null;
+let savedPlayerPosition=null,savedPlayerRotation=0,interiorGroup=null,furnitureCount=0;
+
+function openJobs(){
+ shopOpen=true;
+ currentShop="jobs";
+ document.getElementById("shop").style.display="block";
+ document.getElementById("shopTitle").innerText="💼 NEXTORIA CAREERS";
+ document.getElementById("shopDescription").innerText="Choose a career, apply for a job, and earn Naira by completing work shifts.";
+ let html="";
+ if(currentJob){
+  html+=`<div style="padding:10px;background:#e8f4ff;border-radius:9px;margin-bottom:12px"><b>Your current job: ${currentJob.name}</b><br>Pay per shift: ₦${currentJob.salary.toLocaleString()}<br><button onclick="workShift()">Work a shift</button><button onclick="quitJob()">Quit job</button></div>`;
+ }else{
+  html+="<p>You are currently unemployed. Choose a career below.</p>";
+ }
+ availableJobs.forEach((job,i)=>{
+  html+=`<div style="border:1px solid #ddd;border-radius:9px;padding:9px;margin:8px 0"><b>${job.name}</b><br><small>${job.description}</small><br>Pay: ₦${job.salary.toLocaleString()} per shift<br><button onclick="applyForJob(${i})" ${currentJob?"disabled":""}>Apply</button></div>`;
+ });
+ document.getElementById("shopItems").innerHTML=html;
+ document.getElementById("message").innerText=currentJob?"Work shifts to earn your salary.":"Choose a job to begin your career.";
+}
+
+function applyForJob(i){
+ if(currentJob)return msg("You already have a job. Quit it before applying for another.");
+ currentJob=availableJobs[i];
+ openJobs();
+ msg("Congratulations! You are now a "+currentJob.name+".");
+}
+
+function workShift(){
+ if(!currentJob)return msg("Apply for a job first.");
+ money+=currentJob.salary;
+ updateMoney();
+ msg("Shift completed! You earned ₦"+currentJob.salary.toLocaleString()+".");
+}
+
+function quitJob(){
+ if(!currentJob)return msg("You do not have a job to quit.");
+ let oldJob=currentJob.name;
+ currentJob=null;
+ openJobs();
+ msg("You quit your job as "+oldJob+".");
+}
+
+
+// Open the Decor Mode menu.
+function openDecorMode(){
+ shopOpen=true;
+ currentShop="decor";
+ document.getElementById("shop").style.display="block";
+ document.getElementById("shopTitle").innerText="🛋️ NEXTORIA DECOR MODE";
+ document.getElementById("shopDescription").innerText=
+  "Unlock beautiful room interiors, then furnish them with items you purchase using Naira.";
+ let html="";
+ if(insideInterior){
+  html+=`<div class="decor-card"><strong>You're decorating: ${activeInterior.name}</strong>
+   <div class="detail">Furniture you buy will appear inside this room.</div>
+   <button onclick="exitInterior()">← Return to city</button></div>`;
+  const items=decorFurniture.filter(f=>f.room===activeInterior.id);
+  items.forEach(item=>{
+   const count=(ownedFurniture[activeInterior.id]||[]).filter(x=>x===item.id).length;
+   html+=`<div class="decor-card"><strong>${item.name}</strong>
+    <div class="price">₦${item.price.toLocaleString()}</div>
+    <div class="detail">Owned in this room: ${count}</div>
+    <button onclick="buyFurniture('${item.id}')">Buy & place</button></div>`;
+  });
+ }else{
+  html+=`<div class="decor-card"><strong>Choose an interior</strong>
+   <div class="detail">Each room has a one-time unlock price. Once unlocked, you can enter it and buy furniture.</div></div>`;
+  interiorOptions.forEach(room=>{
+   const owned=ownedInteriors.includes(room.id);
+   html+=`<div class="decor-card"><strong>${room.name}</strong>
+    <div class="detail">${room.description}</div>
+    <div class="price">${owned?"UNLOCKED":"₦"+room.price.toLocaleString()}</div>
+    <button onclick="${owned?`enterInterior('${room.id}')`:`buyInterior('${room.id}')`}">${owned?"Enter & decorate":"Unlock interior"}</button></div>`;
+  });
+ }
+ document.getElementById("shopItems").innerHTML=html;
+ document.getElementById("message").innerText="";
+}
+
+function buyInterior(id){
+ const room=interiorOptions.find(r=>r.id===id);
+ if(!room)return;
+ if(ownedInteriors.includes(id))return msg("You already unlocked this interior.");
+ if(money<room.price)return msg("Not enough Naira to unlock this interior.");
+ money-=room.price;
+ ownedInteriors.push(id);
+ updateMoney();
+ openDecorMode();
+ msg(room.name+" unlocked! You can now enter and decorate it.");
+}
+
+function enterInterior(id){
+ const room=interiorOptions.find(r=>r.id===id);
+ if(!room||!ownedInteriors.includes(id))return msg("Unlock this interior first.");
+ if(!scene||!player)return;
+ savedPlayerPosition=player.position.clone();
+ savedPlayerRotation=player.rotation.y;
+ activeInterior=room;
+ insideInterior=true;
+ buildInteriorRoom();
+ player.position.set(0,0,1000);
+ player.rotation.y=0;
+ if(driving){driving=false;player.visible=true;}
+ camera.position.set(0,8,1015);
+ camera.lookAt(0,1,1000);
+ openDecorMode();
+ msg("Welcome to your "+room.name+".");
+}
+
+function buildInteriorRoom(){
+ if(interiorGroup)scene.remove(interiorGroup);
+ interiorGroup=new THREE.Group();
+ interiorGroup.position.set(0,0,1000);
+ const mat=(color)=>new THREE.MeshStandardMaterial({color});
+ function part(w,h,d,x,y,z,color){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));
+  m.position.set(x,y,z);interiorGroup.add(m);return m;
+ }
+ // Floor and three walls leave the front open for a clear view.
+ part(14,.35,14,0,-.2,0,0x9a8064);
+ part(14,6,.35,0,3,-7,0xe9e0d1);
+ part(.35,6,14,-7,3,0,0xd9d0c3);
+ part(.35,6,14,7,3,0,0xd9d0c3);
+ part(14,.25,.35,0,5.9,7,0xd9d0c3);
+ // Room-specific feature colours.
+ if(activeInterior.id==="kitchen"){
+  part(10,1.1,1.3,0,.65,-5.2,0x6c4934);
+  part(10,.18,1.3,0,1.3,-5.2,0xe6e1d8);
+ }else if(activeInterior.id==="bathroom"){
+  part(5,.12,5,2,.02,-2,0xb7dce5);
+ }else if(activeInterior.id==="bedroom"){
+  part(5,.12,5,0,.02,-1,0x8799b4);
+ }else if(activeInterior.id==="dining"){
+  part(5,.12,5,0,.02,-1,0x9d7651);
+ }else{
+  part(6,.12,5,0,.02,-1,0x8c806d);
+ }
+ scene.add(interiorGroup);
+ // Rebuild purchased furniture in this room.
+ const owned=ownedFurniture[activeInterior.id]||[];
+ owned.forEach(id=>placeFurnitureModel(decorFurniture.find(f=>f.id===id),false));
+}
+
+function placeFurnitureModel(item,save=true){
+ if(!item||!interiorGroup)return;
+ const group=new THREE.Group();
+ const wood=new THREE.MeshStandardMaterial({color:0x70452d});
+ const cream=new THREE.MeshStandardMaterial({color:0xd8c4a4});
+ const dark=new THREE.MeshStandardMaterial({color:0x202a36});
+ const metal=new THREE.MeshStandardMaterial({color:0x9aa6b2,metalness:.35,roughness:.5});
+ function p(w,h,d,x,y,z,material){
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);
+  mesh.position.set(x,y,z);group.add(mesh);
+ }
+ const index=furnitureCount++;
+ const x=((index%3)-1)*3.2;
+ const z=-2+Math.floor(index/3)*2.5;
+ switch(item.kind){
+  case "sofa":
+   p(4,.65,1.5,x,.65,z,cream);p(4,1.2,.35,x,1.25,z-.58,cream);
+   p(.35,.8,1.5,x-1.85,.85,z,wood);p(.35,.8,1.5,x+1.85,.85,z,wood);break;
+  case "tv":
+   p(3,.35,.8,x,.35,z,wood);p(2.5,1.5,.15,x,1.35,z-.25,dark);break;
+  case "rug":p(4,.06,3,x,.05,z,cream);break;
+  case "bed":
+   p(3,.5,4,x,.45,z,wood);p(2.9,.3,3.5,x,.85,z,cream);
+   p(1.2,.25,.7,x-0.8,1.05,z-1.25,cream);p(1.2,.25,.7,x+.8,1.05,z-1.25,cream);break;
+  case "wardrobe":p(2.2,3,.9,x,1.5,z,wood);p(.08,2.4,.08,x,1.5,z-.48,metal);break;
+  case "lamp":p(.12,1.4,.12,x,.7,z,metal);p(.7,.5,.7,x,1.5,z,cream);break;
+  case "cabinet":case "fridge":p(1.8,2.8,1,x,1.4,z,item.kind==="fridge"?metal:wood);break;
+  case "stove":p(2,.9,1.4,x,.45,z,metal);p(1.5,.1,1,x,.95,z,dark);break;
+  case "bath":p(3,.7,1.6,x,.35,z,cream);break;
+  case "sink":p(1.5,.9,.8,x,.45,z,wood);p(1.2,.18,.7,x,.95,z,cream);break;
+  case "shower":p(2,2.8,.12,x,1.4,z,metal);break;
+  case "table":
+   p(3,.25,2,x,1,z,wood);
+   for(const dx of [-1.3,1.3])for(const dz of [-.7,.7])p(.18,1,.18,x+dx,.5,z+dz,wood);
+   for(const dx of [-2.1,2.1]){p(.7,1,.7,x+dx,.5,z,cream);}break;
+ }
+ group.position.set(0,0,0);
+ interiorGroup.add(group);
+ if(save){
+  if(!ownedFurniture[activeInterior.id])ownedFurniture[activeInterior.id]=[];
+  ownedFurniture[activeInterior.id].push(item.id);
+ }
+}
+
+function buyFurniture(id){
+ const item=decorFurniture.find(f=>f.id===id);
+ if(!item||!insideInterior||!activeInterior||item.room!==activeInterior.id)return;
+ if(money<item.price)return msg("Not enough Naira to buy this furniture.");
+ money-=item.price;
+ updateMoney();
+ placeFurnitureModel(item,true);
+ openDecorMode();
+ msg(item.name+" purchased and placed in your room!");
+}
+
+function exitInterior(){
+ if(!insideInterior)return;
+ insideInterior=false;
+ activeInterior=null;
+ if(savedPlayerPosition)player.position.copy(savedPlayerPosition);
+ player.rotation.y=savedPlayerRotation;
+ savedPlayerPosition=null;
+ if(interiorGroup){scene.remove(interiorGroup);interiorGroup=null;}
+ openDecorMode();
+ msg("You returned to the city.");
+}
+
+
+function msg(t){
+ document.getElementById("message").innerText=t;
+}
+
+function updateMoney(){
+ document.getElementById("money").innerText=money.toLocaleString();
+}
+
+const propertyCatalog=[
+ {name:"Starter Family Home",price:1800000,rent:25000,description:"A cosy home for your NEXTORIA life."},
+ {name:"Modern City House",price:3500000,rent:45000,description:"A modern home with extra space."},
+ {name:"Premium Villa",price:6500000,rent:85000,description:"A spacious premium residence."},
+ {name:"Luxury Mansion",price:9500000,rent:125000,description:"A high-end home for established players."},
+ {name:"Garden Residence",price:4200000,rent:55000,description:"A peaceful home with a garden."},
+ {name:"Skyline Penthouse",price:8000000,rent:105000,description:"A stylish city residence."},
+ {name:"Riverside Duplex",price:7200000,rent:92000,description:"A spacious two-storey home near the waterfront."},
+ {name:"Palm Estate Bungalow",price:2800000,rent:36000,description:"A calm family bungalow with a garden."},
+ {name:"Executive Waterfront Villa",price:14500000,rent:185000,description:"A premium villa overlooking the water."},
+ {name:"Port Harcourt Luxury Apartment",price:5600000,rent:72000,description:"A modern apartment in the second destination."},
+ {name:"Delta State Grand Residence",price:11200000,rent:145000,description:"A large residence with a private courtyard."},
+ {name:"NEXTORIA Royal Estate",price:25000000,rent:320000,description:"An exclusive estate home for top players."}
+];
+function openProperties(selectedIndex=null){
+ shopOpen=true;currentShop="property";document.getElementById("shop").style.display="block";
+ document.getElementById("shopTitle").innerText="🏠 NEXTORIA PROPERTIES";
+ document.getElementById("shopDescription").innerText="Purchase a home and collect virtual rent. Each property can only be purchased once.";
+ let html='';
+ propertyCatalog.forEach((p,i)=>{
+  const owned=ownedProperties.includes(i);
+  html+=`<div class="decor-card"><strong>${p.name}</strong><div class="detail">${p.description}</div><div class="price">₦${p.price.toLocaleString('en-NG')}</div><div class="detail">Potential rent: ₦${p.rent.toLocaleString('en-NG')} per collection</div><button onclick="buyProperty(${i})" ${owned?'disabled':''}>${owned?'Owned':'Buy property'}</button>${owned?`<button onclick="collectRent(${i})">Collect rent</button>`:''}</div>`;
+ });
+ document.getElementById("shopItems").innerHTML=html;document.getElementById("message").innerText=selectedIndex!==null?'You are viewing a residential property.':'Manage your homes here.';
+}
+function buyProperty(i){
+ const p=propertyCatalog[i];if(ownedProperties.includes(i))return msg('You already own this property.');
+ if(money<p.price)return msg('Not enough money to buy this property.');
+ money-=p.price;ownedProperties.push(i);updateMoney();openProperties(i);msg('Congratulations! '+p.name+' is now yours.');
+}
+function collectRent(i){
+ if(!ownedProperties.includes(i))return msg('You do not own this property.');
+ const rent=propertyCatalog[i].rent;money+=rent;updateMoney();openProperties(i);msg('You collected ₦'+rent.toLocaleString('en-NG')+' virtual rent.');
+}
+function openSocial(){
+ shopOpen=true;currentShop='social';document.getElementById('shop').style.display='block';
+ document.getElementById('shopTitle').innerText='💬 NEXTORIA SOCIAL';
+ document.getElementById('shopDescription').innerText='Meet the city community. These are sample local contacts in this single-player prototype.';
+ document.getElementById('shopItems').innerHTML=`<div class="decor-card"><strong>Amara Okafor</strong><div class="detail">Neighbour · “Welcome to NEXTORIA!”</div><button onclick="socialReply('Amara')">Reply</button></div><div class="decor-card"><strong>Tunde Bello</strong><div class="detail">Car enthusiast · “Have you visited NTRUDER AUTOS?”</div><button onclick="socialReply('Tunde')">Reply</button></div><div class="decor-card"><strong>Zara James</strong><div class="detail">Fashion lover · “The new city looks amazing!”</div><button onclick="socialReply('Zara')">Reply</button></div>`;
+ document.getElementById('message').innerText='Your messages will appear here.';
+}
+function socialReply(name){msg('Message sent to '+name+'! (Demo message)');}
+function openWorldControls(){
+ shopOpen=true;currentShop='world';document.getElementById('shop').style.display='block';
+ document.getElementById('shopTitle').innerText='🌦️ NEXTORIA WORLD';
+ document.getElementById('shopDescription').innerText='Change the weather and city time. The world will also cycle automatically.';
+ document.getElementById('shopItems').innerHTML=`<div class="decor-card"><strong>Weather</strong><div class="detail">Current: ${worldWeather}</div><button onclick="setWorldWeather('Sunny')">☀️ Sunny</button><button onclick="setWorldWeather('Cloudy')">☁️ Cloudy</button><button onclick="setWorldWeather('Rainy')">🌧️ Rainy</button></div><div class="decor-card"><strong>City time</strong><div class="detail">Current: ${formatWorldTime()}</div><button onclick="setWorldTime(8)">Morning</button><button onclick="setWorldTime(14)">Afternoon</button><button onclick="setWorldTime(20)">Evening</button></div><div class="decor-card"><strong>City event</strong><div class="detail">${worldEvent}</div><button onclick="startCityEvent()">Find a city event</button></div>`;
+ document.getElementById('message').innerText='';
+}
+function formatWorldTime(){let h=Math.floor(worldClockMinutes/60)%24,m=worldClockMinutes%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+function setWorldWeather(w){worldWeather=w;applyWorldLighting();openWorldControls();msg('Weather changed to '+w+'.');}
+function setWorldTime(h){worldClockMinutes=h*60;applyWorldLighting();openWorldControls();msg('City time changed.');}
+function applyWorldLighting(){
+ if(!scene||!playerSun)return;
+ const hour=worldClockMinutes/60;const night=hour<6||hour>=19;
+ scene.background=new THREE.Color(night?0x101b35:worldWeather==='Rainy'?0x687887:worldWeather==='Cloudy'?0x9aa9b4:0x87ceeb);
+ playerSun.intensity=night?.35:worldWeather==='Rainy'?.75:worldWeather==='Cloudy'?1.1:2;
+}
+function startCityEvent(){
+ const events=['Community market day is happening downtown!','A music festival is coming to the city square!','NEXTORIA Academy is hosting a school fair!','The city is celebrating a community day!'];
+ worldEvent=events[Math.floor(Math.random()*events.length)];openWorldControls();msg(worldEvent);
+}
+function updateWorldCycle(){
+ if(!gameStarted)return;
+ const now=Date.now();if(now-worldLastTick>30000){worldClockMinutes=(worldClockMinutes+10)%(24*60);worldLastTick=now;applyWorldLighting();}
+}
+
+function closeShop(){
+ shopOpen=false;
+ currentShop=null;
+ document.getElementById("shop").style.display="none";
+}
+
+document.addEventListener("keydown",e=>{
+ let k=e.key.toLowerCase();
+ if(k.startsWith("arrow")) e.preventDefault();
+ keys[k]=true;
+ if(k==="p" && gameStarted){togglePhone();return;}
+ if(phoneOpen)return;
+
+ if(k==="d" && gameStarted && !shopOpen){openDecorMode();return;}
+ if(k==="e" && gameStarted && !shopOpen && !insideInterior){
+  if(!driving && distance(player,car)<4){
+   driving=true;
+   player.visible=false;
+   return;
+  }
+  if(driving){
+   driving=false;
+   player.visible=true;
+   player.position.copy(car.position);
+   player.position.x+=2;
+   return;
+  }
+
+  let nearest=null,near=8;
+  doors.forEach(d=>{
+   let n=distance(player,d.object);
+   if(n<near){near=n;nearest=d;}
+  });
+  if(nearest)openShop(nearest.name);
+ }
+});
+
+document.addEventListener("keyup",e=>{
+ keys[e.key.toLowerCase()]=false;
+});
+
+function animate(){
+ if(animationRunning)return;
+ animationRunning=true;
+ requestAnimationFrame(()=>{animationRunning=false;animate();});
+ updateWorldCycle();
+
+ if(gameStarted && !phoneOpen){
+  let target=driving?car:player;
+  if(driving){
+   if(keys.arrowup)car.translateZ(-.26);
+   if(keys.arrowdown)car.translateZ(.13);
+   if(keys.arrowleft)car.rotation.y+=.04;
+   if(keys.arrowright)car.rotation.y-=.04;
+  }else if(!shopOpen){
+   if(keys.arrowup)player.translateZ(-.13);
+   if(keys.arrowdown)player.translateZ(.13);
+   if(keys.arrowleft)player.rotation.y+=.04;
+   if(keys.arrowright)player.rotation.y-=.04;
+  }
+
+  doors.forEach(d=>{
+   d.object.rotation.y=(!driving && distance(player,d.object)<8)?.9:0;
+  });
+
+  let behind=new THREE.Vector3(0,7,12);
+  behind.applyAxisAngle(new THREE.Vector3(0,1,0),target.rotation.y);
+  camera.position.lerp(target.position.clone().add(behind),.08);
+  camera.lookAt(target.position.x,target.position.y+1,target.position.z);
+ }
+ renderer.render(scene,camera);
+}
+
+window.addEventListener("resize",()=>{
+ if(!camera||!renderer)return;
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
