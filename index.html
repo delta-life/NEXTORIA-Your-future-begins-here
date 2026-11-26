@@ -193,7 +193,7 @@ button:active{transform:translateY(0)}
     <label>Password<input id="signupPassword" required minlength="6" type="password" autocomplete="new-password" placeholder="At least 6 characters"></label>
     <label>Date of birth<input id="birthDate" required type="date"></label>
     <label>Email<input id="signupEmail" required type="email" autocomplete="email" placeholder="you@example.com"></label>
-    <button class="gold-action" type="submit">CREATE ACCOUNT <span>→</span></button>
+    <button class="gold-action" type="button" onclick="handleSignup(event)">CREATE ACCOUNT <span>→</span></button>
    </form>
    <p class="welcome-switch" id="signupSwitch">Already have an account? <button type="button" onclick="showLogin()">Log in</button></p>
    <form id="loginForm" class="welcome-form" style="display:none">
@@ -453,22 +453,26 @@ function showSignup(){
  document.getElementById("loginSwitch").style.display="none";
  document.getElementById("accountError").textContent="";
 }
-document.getElementById("signupForm").addEventListener("submit",e=>{
- e.preventDefault();
+function handleSignup(e){
+ if(e)e.preventDefault();
  const username=document.getElementById("signupUsername").value.trim();
  const password=document.getElementById("signupPassword").value;
  const email=document.getElementById("signupEmail").value.trim();
  const dob=document.getElementById("birthDate").value;
  const name=document.getElementById("characterNameInput").value.trim();
- if(!name||!username||!password||!email||!dob){document.getElementById("accountError").textContent="Please complete every field.";return;}
- if(password.length<6){document.getElementById("accountError").textContent="Please use at least 6 characters for this demo password.";return;}
+ const error=document.getElementById("accountError");
+ if(!name||!username||!password||!email||!dob){error.textContent="Please complete every field.";return false;}
+ if(password.length<6){error.textContent="Please use at least 6 characters for this demo password.";return false;}
+ if(!document.getElementById("signupEmail").checkValidity()){error.textContent="Please enter a valid email address.";return false;}
  demoAccount={username,password,email,dob,characterName:name};
  characterProfile.name=name;
  document.getElementById("previewName").textContent=name;
- document.getElementById("accountError").textContent="";
+ error.textContent="";
  prepareCharacterChoices();
  showWelcomePage("characterPage",55);
-});
+ return false;
+}
+document.getElementById("signupForm").addEventListener("submit",handleSignup);
 document.getElementById("loginForm").addEventListener("submit",e=>{
  e.preventDefault();
  const username=document.getElementById("loginUsername").value.trim();
