@@ -279,7 +279,7 @@ button:active{transform:translateY(0)}
 </div>
 
 <div id="help" style="display:none">
- ARROW KEYS = Move / Drive<br>
+ W A S D = Move / Drive<br>
  E = Enter car or open shop
 </div>
 
@@ -291,7 +291,7 @@ button:active{transform:translateY(0)}
  <button class="close" onclick="closeShop()">Close</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 let scene,camera,renderer,player,car,playerBody,playerHead,playerHair,playerSun;
 let money=5000000,inventory=[],carsOwned=[];
@@ -540,11 +540,6 @@ function applyCharacterAppearance(){
 }
 
 function enterNextoria(){
- if(typeof THREE==="undefined"){
-  const result=document.getElementById("generationResult");
-  if(result)result.textContent="The 3D engine did not load. Check your internet connection, reload NEXTORIA, and try again.";
-  return;
- }
  money=selectedGeneration==="Gen Z"?100000000:50000000;
  loanBalance=selectedGeneration==="Gen X"?50000000:0;
  const moneyEl=document.getElementById("money");
@@ -640,23 +635,9 @@ function makeCity(){
  scene=new THREE.Scene();
  scene.background=new THREE.Color(0x87ceeb);
 
- camera=new THREE.PerspectiveCamera(65,Math.max(innerWidth,1)/Math.max(innerHeight,1),.1,1000);
- try{
-  renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:"high-performance"});
- }catch(error){
-  const result=document.getElementById("generationResult");
-  if(result)result.textContent="NEXTORIA could not start 3D graphics on this browser. Please update your browser and enable hardware acceleration, then reload.";
-  console.error("NEXTORIA WebGL startup error:",error);
-  return;
- }
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
- renderer.setSize(Math.max(innerWidth,1),Math.max(innerHeight,1));
- renderer.outputColorSpace=THREE.SRGBColorSpace;
- renderer.domElement.style.position="fixed";
- renderer.domElement.style.inset="0";
- renderer.domElement.style.width="100%";
- renderer.domElement.style.height="100%";
- renderer.domElement.style.zIndex="0";
+ camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1000);
+ renderer=new THREE.WebGLRenderer({antialias:true});
+ renderer.setSize(innerWidth,innerHeight);
  document.body.appendChild(renderer.domElement);
 
  scene.add(new THREE.HemisphereLight(0xffffff,0x555555,2));
@@ -998,3 +979,270 @@ function buyInterior(id){
 
 function enterInterior(id){
  const room=interiorOptions.find(r=>r.id===id);
+ if(!room||!ownedInteriors.includes(id))return msg("Unlock this interior first.");
+ if(!scene||!player)return;
+ savedPlayerPosition=player.position.clone();
+ savedPlayerRotation=player.rotation.y;
+ activeInterior=room;
+ insideInterior=true;
+ buildInteriorRoom();
+ player.position.set(0,0,1000);
+ player.rotation.y=0;
+ if(driving){driving=false;player.visible=true;}
+ camera.position.set(0,8,1015);
+ camera.lookAt(0,1,1000);
+ openDecorMode();
+ msg("Welcome to your "+room.name+".");
+}
+
+function buildInteriorRoom(){
+ if(interiorGroup)scene.remove(interiorGroup);
+ interiorGroup=new THREE.Group();
+ interiorGroup.position.set(0,0,1000);
+ const mat=(color)=>new THREE.MeshStandardMaterial({color});
+ function part(w,h,d,x,y,z,color){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));
+  m.position.set(x,y,z);interiorGroup.add(m);return m;
+ }
+ // Floor and three walls leave the front open for a clear view.
+ part(14,.35,14,0,-.2,0,0x9a8064);
+ part(14,6,.35,0,3,-7,0xe9e0d1);
+ part(.35,6,14,-7,3,0,0xd9d0c3);
+ part(.35,6,14,7,3,0,0xd9d0c3);
+ part(14,.25,.35,0,5.9,7,0xd9d0c3);
+ // Room-specific feature colours.
+ if(activeInterior.id==="kitchen"){
+  part(10,1.1,1.3,0,.65,-5.2,0x6c4934);
+  part(10,.18,1.3,0,1.3,-5.2,0xe6e1d8);
+ }else if(activeInterior.id==="bathroom"){
+  part(5,.12,5,2,.02,-2,0xb7dce5);
+ }else if(activeInterior.id==="bedroom"){
+  part(5,.12,5,0,.02,-1,0x8799b4);
+ }else if(activeInterior.id==="dining"){
+  part(5,.12,5,0,.02,-1,0x9d7651);
+ }else{
+  part(6,.12,5,0,.02,-1,0x8c806d);
+ }
+ scene.add(interiorGroup);
+ // Rebuild purchased furniture in this room.
+ const owned=ownedFurniture[activeInterior.id]||[];
+ owned.forEach(id=>placeFurnitureModel(decorFurniture.find(f=>f.id===id),false));
+}
+
+function placeFurnitureModel(item,save=true){
+ if(!item||!interiorGroup)return;
+ const group=new THREE.Group();
+ const wood=new THREE.MeshStandardMaterial({color:0x70452d});
+ const cream=new THREE.MeshStandardMaterial({color:0xd8c4a4});
+ const dark=new THREE.MeshStandardMaterial({color:0x202a36});
+ const metal=new THREE.MeshStandardMaterial({color:0x9aa6b2,metalness:.35,roughness:.5});
+ function p(w,h,d,x,y,z,material){
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);
+  mesh.position.set(x,y,z);group.add(mesh);
+ }
+ const index=furnitureCount++;
+ const x=((index%3)-1)*3.2;
+ const z=-2+Math.floor(index/3)*2.5;
+ switch(item.kind){
+  case "sofa":
+   p(4,.65,1.5,x,.65,z,cream);p(4,1.2,.35,x,1.25,z-.58,cream);
+   p(.35,.8,1.5,x-1.85,.85,z,wood);p(.35,.8,1.5,x+1.85,.85,z,wood);break;
+  case "tv":
+   p(3,.35,.8,x,.35,z,wood);p(2.5,1.5,.15,x,1.35,z-.25,dark);break;
+  case "rug":p(4,.06,3,x,.05,z,cream);break;
+  case "bed":
+   p(3,.5,4,x,.45,z,wood);p(2.9,.3,3.5,x,.85,z,cream);
+   p(1.2,.25,.7,x-0.8,1.05,z-1.25,cream);p(1.2,.25,.7,x+.8,1.05,z-1.25,cream);break;
+  case "wardrobe":p(2.2,3,.9,x,1.5,z,wood);p(.08,2.4,.08,x,1.5,z-.48,metal);break;
+  case "lamp":p(.12,1.4,.12,x,.7,z,metal);p(.7,.5,.7,x,1.5,z,cream);break;
+  case "cabinet":case "fridge":p(1.8,2.8,1,x,1.4,z,item.kind==="fridge"?metal:wood);break;
+  case "stove":p(2,.9,1.4,x,.45,z,metal);p(1.5,.1,1,x,.95,z,dark);break;
+  case "bath":p(3,.7,1.6,x,.35,z,cream);break;
+  case "sink":p(1.5,.9,.8,x,.45,z,wood);p(1.2,.18,.7,x,.95,z,cream);break;
+  case "shower":p(2,2.8,.12,x,1.4,z,metal);break;
+  case "table":
+   p(3,.25,2,x,1,z,wood);
+   for(const dx of [-1.3,1.3])for(const dz of [-.7,.7])p(.18,1,.18,x+dx,.5,z+dz,wood);
+   for(const dx of [-2.1,2.1]){p(.7,1,.7,x+dx,.5,z,cream);}break;
+ }
+ group.position.set(0,0,0);
+ interiorGroup.add(group);
+ if(save){
+  if(!ownedFurniture[activeInterior.id])ownedFurniture[activeInterior.id]=[];
+  ownedFurniture[activeInterior.id].push(item.id);
+ }
+}
+
+function buyFurniture(id){
+ const item=decorFurniture.find(f=>f.id===id);
+ if(!item||!insideInterior||!activeInterior||item.room!==activeInterior.id)return;
+ if(money<item.price)return msg("Not enough Naira to buy this furniture.");
+ money-=item.price;
+ updateMoney();
+ placeFurnitureModel(item,true);
+ openDecorMode();
+ msg(item.name+" purchased and placed in your room!");
+}
+
+function exitInterior(){
+ if(!insideInterior)return;
+ insideInterior=false;
+ activeInterior=null;
+ if(savedPlayerPosition)player.position.copy(savedPlayerPosition);
+ player.rotation.y=savedPlayerRotation;
+ savedPlayerPosition=null;
+ if(interiorGroup){scene.remove(interiorGroup);interiorGroup=null;}
+ openDecorMode();
+ msg("You returned to the city.");
+}
+
+
+function msg(t){
+ document.getElementById("message").innerText=t;
+}
+
+function updateMoney(){
+ document.getElementById("money").innerText=money.toLocaleString();
+}
+
+const propertyCatalog=[
+ {name:"Starter Family Home",price:1800000,rent:25000,description:"A cosy home for your NEXTORIA life."},
+ {name:"Modern City House",price:3500000,rent:45000,description:"A modern home with extra space."},
+ {name:"Premium Villa",price:6500000,rent:85000,description:"A spacious premium residence."},
+ {name:"Luxury Mansion",price:9500000,rent:125000,description:"A high-end home for established players."},
+ {name:"Garden Residence",price:4200000,rent:55000,description:"A peaceful home with a garden."},
+ {name:"Skyline Penthouse",price:8000000,rent:105000,description:"A stylish city residence."}
+];
+function openProperties(selectedIndex=null){
+ shopOpen=true;currentShop="property";document.getElementById("shop").style.display="block";
+ document.getElementById("shopTitle").innerText="🏠 NEXTORIA PROPERTIES";
+ document.getElementById("shopDescription").innerText="Purchase a home and collect virtual rent. Each property can only be purchased once.";
+ let html='';
+ propertyCatalog.forEach((p,i)=>{
+  const owned=ownedProperties.includes(i);
+  html+=`<div class="decor-card"><strong>${p.name}</strong><div class="detail">${p.description}</div><div class="price">₦${p.price.toLocaleString('en-NG')}</div><div class="detail">Potential rent: ₦${p.rent.toLocaleString('en-NG')} per collection</div><button onclick="buyProperty(${i})" ${owned?'disabled':''}>${owned?'Owned':'Buy property'}</button>${owned?`<button onclick="collectRent(${i})">Collect rent</button>`:''}</div>`;
+ });
+ document.getElementById("shopItems").innerHTML=html;document.getElementById("message").innerText=selectedIndex!==null?'You are viewing a residential property.':'Manage your homes here.';
+}
+function buyProperty(i){
+ const p=propertyCatalog[i];if(ownedProperties.includes(i))return msg('You already own this property.');
+ if(money<p.price)return msg('Not enough money to buy this property.');
+ money-=p.price;ownedProperties.push(i);updateMoney();openProperties(i);msg('Congratulations! '+p.name+' is now yours.');
+}
+function collectRent(i){
+ if(!ownedProperties.includes(i))return msg('You do not own this property.');
+ const rent=propertyCatalog[i].rent;money+=rent;updateMoney();openProperties(i);msg('You collected ₦'+rent.toLocaleString('en-NG')+' virtual rent.');
+}
+function openSocial(){
+ shopOpen=true;currentShop='social';document.getElementById('shop').style.display='block';
+ document.getElementById('shopTitle').innerText='💬 NEXTORIA SOCIAL';
+ document.getElementById('shopDescription').innerText='Meet the city community. These are sample local contacts in this single-player prototype.';
+ document.getElementById('shopItems').innerHTML=`<div class="decor-card"><strong>Amara Okafor</strong><div class="detail">Neighbour · “Welcome to NEXTORIA!”</div><button onclick="socialReply('Amara')">Reply</button></div><div class="decor-card"><strong>Tunde Bello</strong><div class="detail">Car enthusiast · “Have you visited NTRUDER AUTOS?”</div><button onclick="socialReply('Tunde')">Reply</button></div><div class="decor-card"><strong>Zara James</strong><div class="detail">Fashion lover · “The new city looks amazing!”</div><button onclick="socialReply('Zara')">Reply</button></div>`;
+ document.getElementById('message').innerText='Your messages will appear here.';
+}
+function socialReply(name){msg('Message sent to '+name+'! (Demo message)');}
+function openWorldControls(){
+ shopOpen=true;currentShop='world';document.getElementById('shop').style.display='block';
+ document.getElementById('shopTitle').innerText='🌦️ NEXTORIA WORLD';
+ document.getElementById('shopDescription').innerText='Change the weather and city time. The world will also cycle automatically.';
+ document.getElementById('shopItems').innerHTML=`<div class="decor-card"><strong>Weather</strong><div class="detail">Current: ${worldWeather}</div><button onclick="setWorldWeather('Sunny')">☀️ Sunny</button><button onclick="setWorldWeather('Cloudy')">☁️ Cloudy</button><button onclick="setWorldWeather('Rainy')">🌧️ Rainy</button></div><div class="decor-card"><strong>City time</strong><div class="detail">Current: ${formatWorldTime()}</div><button onclick="setWorldTime(8)">Morning</button><button onclick="setWorldTime(14)">Afternoon</button><button onclick="setWorldTime(20)">Evening</button></div><div class="decor-card"><strong>City event</strong><div class="detail">${worldEvent}</div><button onclick="startCityEvent()">Find a city event</button></div>`;
+ document.getElementById('message').innerText='';
+}
+function formatWorldTime(){let h=Math.floor(worldClockMinutes/60)%24,m=worldClockMinutes%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+function setWorldWeather(w){worldWeather=w;applyWorldLighting();openWorldControls();msg('Weather changed to '+w+'.');}
+function setWorldTime(h){worldClockMinutes=h*60;applyWorldLighting();openWorldControls();msg('City time changed.');}
+function applyWorldLighting(){
+ if(!scene||!playerSun)return;
+ const hour=worldClockMinutes/60;const night=hour<6||hour>=19;
+ scene.background=new THREE.Color(night?0x101b35:worldWeather==='Rainy'?0x687887:worldWeather==='Cloudy'?0x9aa9b4:0x87ceeb);
+ playerSun.intensity=night?.35:worldWeather==='Rainy'?.75:worldWeather==='Cloudy'?1.1:2;
+}
+function startCityEvent(){
+ const events=['Community market day is happening downtown!','A music festival is coming to the city square!','NEXTORIA Academy is hosting a school fair!','The city is celebrating a community day!'];
+ worldEvent=events[Math.floor(Math.random()*events.length)];openWorldControls();msg(worldEvent);
+}
+function updateWorldCycle(){
+ if(!gameStarted)return;
+ const now=Date.now();if(now-worldLastTick>30000){worldClockMinutes=(worldClockMinutes+10)%(24*60);worldLastTick=now;applyWorldLighting();}
+}
+
+function closeShop(){
+ shopOpen=false;
+ currentShop=null;
+ document.getElementById("shop").style.display="none";
+}
+
+document.addEventListener("keydown",e=>{
+ let k=e.key.toLowerCase();
+ if(k.startsWith("arrow")) e.preventDefault();
+ keys[k]=true;
+ if(k==="p" && gameStarted){togglePhone();return;}
+ if(phoneOpen)return;
+
+ if(k==="d" && gameStarted && !shopOpen){openDecorMode();return;}
+ if(k==="e" && gameStarted && !shopOpen && !insideInterior){
+  if(!driving && distance(player,car)<4){
+   driving=true;
+   player.visible=false;
+   return;
+  }
+  if(driving){
+   driving=false;
+   player.visible=true;
+   player.position.copy(car.position);
+   player.position.x+=2;
+   return;
+  }
+
+  let nearest=null,near=8;
+  doors.forEach(d=>{
+   let n=distance(player,d.object);
+   if(n<near){near=n;nearest=d;}
+  });
+  if(nearest)openShop(nearest.name);
+ }
+});
+
+document.addEventListener("keyup",e=>{
+ keys[e.key.toLowerCase()]=false;
+});
+
+function animate(){
+ requestAnimationFrame(animate);
+ updateWorldCycle();
+
+ if(gameStarted && !phoneOpen){
+  let target=driving?car:player;
+  if(driving){
+   if(keys.arrowup)car.translateZ(-.26);
+   if(keys.arrowdown)car.translateZ(.13);
+   if(keys.arrowleft)car.rotation.y+=.04;
+   if(keys.arrowright)car.rotation.y-=.04;
+  }else if(!shopOpen){
+   if(keys.arrowup)player.translateZ(-.13);
+   if(keys.arrowdown)player.translateZ(.13);
+   if(keys.arrowleft)player.rotation.y+=.04;
+   if(keys.arrowright)player.rotation.y-=.04;
+  }
+
+  doors.forEach(d=>{
+   d.object.rotation.y=(!driving && distance(player,d.object)<8)?.9:0;
+  });
+
+  let behind=new THREE.Vector3(0,7,12);
+  behind.applyAxisAngle(new THREE.Vector3(0,1,0),target.rotation.y);
+  camera.position.lerp(target.position.clone().add(behind),.08);
+  camera.lookAt(target.position.x,target.position.y+1,target.position.z);
+ }
+ renderer.render(scene,camera);
+}
+
+window.addEventListener("resize",()=>{
+ if(!camera||!renderer)return;
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
