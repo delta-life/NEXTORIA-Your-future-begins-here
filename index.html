@@ -555,7 +555,8 @@ function continueFromPreview(){
  updateAvatarPreview();
  showWelcomePage("generationPage",85);
 }
-\nfunction spinGeneration(){
+
+function spinGeneration(){
  const button=document.getElementById("spinButton");
  const wheel=document.getElementById("generationWheel");
  const result=document.getElementById("generationResult");
@@ -605,9 +606,10 @@ function startGame(){showWelcomePage("accountPage",25);}
 function box(x,y,z,w,h,d,color){
  let m=new THREE.Mesh(
   new THREE.BoxGeometry(w,h,d),
-  new THREE.MeshStandardMaterial({color:color})
+  new THREE.MeshStandardMaterial({color:color,roughness:.82,metalness:.02})
  );
  m.position.set(x,y,z);
+ m.castShadow=true;m.receiveShadow=true;
  scene.add(m);
  return m;
 }
@@ -684,13 +686,24 @@ function makeCity(){
  scene.background=new THREE.Color(0x87ceeb);
 
  camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1000);
- renderer=new THREE.WebGLRenderer({antialias:true});
+ renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
  renderer.setSize(innerWidth,innerHeight);
+ renderer.outputColorSpace=THREE.SRGBColorSpace;
+ renderer.toneMapping=THREE.ACESFilmicToneMapping;
+ renderer.toneMappingExposure=1.08;
+ renderer.shadowMap.enabled=true;
+ renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  document.body.appendChild(renderer.domElement);
-
- scene.add(new THREE.HemisphereLight(0xffffff,0x555555,2));
- let sun=new THREE.DirectionalLight(0xffffff,2);
- sun.position.set(10,20,10);
+ scene.fog=new THREE.Fog(0x87ceeb,95,230);
+ scene.add(new THREE.HemisphereLight(0xdceeff,0x59634d,1.65));
+ let sun=new THREE.DirectionalLight(0xfff1d6,2.25);
+ sun.position.set(-35,55,28);
+ sun.castShadow=true;
+ sun.shadow.mapSize.set(1024,1024);
+ sun.shadow.camera.left=-110;sun.shadow.camera.right=110;
+ sun.shadow.camera.top=110;sun.shadow.camera.bottom=-110;
+ sun.shadow.bias=-0.0005;
  scene.add(sun);playerSun=sun;
 
  box(0,-.5,0,200,1,200,0x399b45);
@@ -753,6 +766,7 @@ function makeCity(){
   new THREE.MeshStandardMaterial({color:0x1769aa})
  );
  playerBody.position.y=1;
+ playerBody.castShadow=true;playerBody.receiveShadow=true;
  player.add(playerBody);
 
  playerHead=new THREE.Mesh(
@@ -760,7 +774,7 @@ function makeCity(){
   new THREE.MeshStandardMaterial({color:0x8b542f})
  );
  playerHead.position.y=2;
- player.add(playerHead);
+ playerHead.castShadow=true;player.add(playerHead);
 
  playerHair=new THREE.Mesh(
   new THREE.SphereGeometry(.43,16,16),
@@ -768,7 +782,7 @@ function makeCity(){
  );
  playerHair.scale.y=.45;
  playerHair.position.y=2.25;
- player.add(playerHair);
+ playerHair.castShadow=true;player.add(playerHair);
 
  player.position.set(0,0,5);
  scene.add(player);
@@ -1193,7 +1207,7 @@ function openContacts(){
  document.getElementById("shop").style.display="block";
  document.getElementById("shopTitle").innerText="👥 NEXTORIA CONTACTS";
  document.getElementById("shopDescription").innerText="Add people to your local contact list using their NEXTORIA username.";
- const rows=nextoriaContacts.length?nextoriaContacts.map((name,i)=>'<div class="contact-row"><div><strong>@'+escapeTransferName(name)+'</strong><small>Saved contact</small></div><button onclick="removeNextoriaContact('+i+')">Remove</button></div>').join(""):'<div class="decor-card"><strong>No contacts yet</strong><div class="detail">Add a player's username above to start your list.</div></div>';
+ const rows=nextoriaContacts.length?nextoriaContacts.map((name,i)=>'<div class="contact-row"><div><strong>@'+escapeTransferName(name)+'</strong><small>Saved contact</small></div><button onclick="removeNextoriaContact('+i+')">Remove</button></div>').join(""):'<div class="decor-card"><strong>No contacts yet</strong><div class="detail">Add a username above to start your list.</div></div>';
  document.getElementById("shopItems").innerHTML='<div class="contact-form"><strong>Add a player by username</strong><input id="contactUsername" maxlength="20" autocomplete="off" placeholder="Enter their username"><button class="gold-action" onclick="addNextoriaContact()">＋ ADD CONTACT</button></div><p class="contact-note">This prototype saves contacts on this device only. It does not yet search or notify players on other devices; that requires an online player database.</p><div style="margin-top:16px"><strong>MY CONTACTS ('+nextoriaContacts.length+')</strong>'+rows+'</div>';
  document.getElementById("message").innerText="";
 }
@@ -1211,7 +1225,8 @@ function removeNextoriaContact(index){
  if(index<0||index>=nextoriaContacts.length)return;
  const removed=nextoriaContacts.splice(index,1)[0];saveNextoriaContacts();openContacts();msg("@"+removed+" removed.");
 }
-\nfunction openSocial(){
+
+function openSocial(){
  shopOpen=true;currentShop='social';document.getElementById('shop').style.display='block';
  document.getElementById('shopTitle').innerText='💬 NEXTORIA SOCIAL';
  document.getElementById('shopDescription').innerText='Meet the city community. These are sample local contacts in this single-player prototype.';
