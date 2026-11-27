@@ -174,7 +174,28 @@ button:active{transform:translateY(0)}
 .spin-action{width:min(100%,300px);margin:0 auto;justify-content:center}.generation-result{text-align:center;color:#dce7f1;font-size:13px;min-height:22px;margin:15px 0 0}.generation-result strong{color:var(--gold-light);font-size:17px}.enter-action{width:100%;margin-top:16px;justify-content:center}
 @media(max-width:560px){.welcome-wrap{padding:18px 0}.welcome-page{padding:20px 16px}.welcome-form,.character-grid{grid-template-columns:1fr}.welcome-form .gold-action{grid-column:1}.welcome-brand{letter-spacing:2px}.wheel-wrap{width:185px;height:185px}}
 
-</style>
+/* Character preview polish */
+.avatar-preview{position:relative;overflow:hidden;min-height:205px;background:radial-gradient(ellipse at 50% 35%,rgba(93,158,202,.2),transparent 62%)}
+.avatar-model{--skin:#8b542f;--shirt:#1769aa;--hair:#17110e;position:relative;width:118px;height:150px;margin:2px auto 8px;filter:drop-shadow(0 12px 12px rgba(0,0,0,.28))}
+.avatar-head{position:absolute;z-index:3;top:10px;left:39px;width:42px;height:48px;border-radius:46%;background:var(--skin)}
+.avatar-hair{position:absolute;z-index:4;top:5px;left:37px;width:46px;height:20px;border-radius:50%;background:var(--hair)}
+.avatar-body{position:absolute;z-index:2;top:57px;left:28px;width:64px;height:52px;border-radius:15px;background:var(--shirt)}
+.avatar-arm{position:absolute;z-index:1;top:61px;width:17px;height:49px;border-radius:12px;background:var(--skin)}
+.avatar-arm.left{left:16px}.avatar-arm.right{right:16px}
+.avatar-leg{position:absolute;top:104px;width:23px;height:42px;border-radius:5px;background:#26384c}
+.avatar-leg.left{left:34px}.avatar-leg.right{right:34px}
+.avatar-model.female .avatar-body{width:70px;left:24px;border-radius:15px 15px 22px 22px}
+.avatar-model.square .avatar-head{border-radius:25%}.avatar-model.strong .avatar-head{border-radius:40% 40% 25% 25%}
+.avatar-model.afro .avatar-hair{top:-1px;left:29px;width:62px;height:32px}
+.avatar-model.bald .avatar-hair{display:none}.avatar-model.longhair .avatar-hair{height:58px;width:54px;left:32px;z-index:1}
+.preview-full{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;padding:14px;border:1px solid rgba(232,189,99,.22);border-radius:16px}
+.preview-stat{padding:10px;border-radius:10px;background:rgba(255,255,255,.045)}
+.preview-stat small{display:block;color:#9fb2c4;font-size:10px}.preview-stat b{font-size:12px;color:#ffe2a0}
+.contact-form{display:grid;gap:10px;padding:15px;border:1px solid rgba(232,189,99,.2);border-radius:14px}
+.contact-form input{width:100%;padding:13px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:#091a2b;color:#fff;font:inherit}
+.contact-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;margin-top:9px;border:1px solid rgba(255,255,255,.1);border-radius:11px}
+.contact-row small{display:block;color:#9fb2c4;font-size:10px}.contact-row button{padding:7px 9px;border-radius:8px;background:#653c46;color:#fff}
+.contact-note{color:#9fb2c4;font-size:11px;line-height:1.5;margin:12px 0 0}</style>
 </head>
 <body>
 
@@ -210,7 +231,7 @@ button:active{transform:translateY(0)}
    <div class="welcome-kicker">STAGE 02 · BUILD YOUR IDENTITY</div>
    <h1>Create your character</h1>
    <p class="welcome-copy">Choose the look and style your character will bring into the city.</p>
-   <div class="avatar-preview"><div id="avatarFace">👨🏿</div><strong id="previewName">Your character</strong><small id="previewLook">Choose your style below</small></div>
+   <div class="avatar-preview"><div class="avatar-model" id="avatarModel"><div class="avatar-hair"></div><div class="avatar-head"></div><div class="avatar-arm left"></div><div class="avatar-arm right"></div><div class="avatar-body"></div><div class="avatar-leg left"></div><div class="avatar-leg right"></div></div><strong id="previewName">Your character</strong><small id="previewLook">Your design updates as you choose.</small></div>
    <div class="choice-block"><span class="choice-title">Character style</span><div class="choice-row" id="genderChoices"><button type="button" class="choice selected" data-value="Male">Male</button><button type="button" class="choice" data-value="Female">Female</button></div></div>
    <div class="character-grid">
     <label>Skin tone<select id="skinChoice"><option value="Dark">Dark</option><option value="Deep brown">Deep brown</option><option value="Brown" selected>Brown</option><option value="Light">Light</option><option value="Caramel">Caramel</option></select></label>
@@ -223,7 +244,7 @@ button:active{transform:translateY(0)}
    <p class="welcome-error" id="characterError" aria-live="polite"></p>
   </section>
 
-  <section class="welcome-page" id="generationPage">
+  <section class="welcome-page" id="previewPage"><div class="welcome-kicker">STAGE 03 · CHARACTER PREVIEW</div><h1>Meet your new character.</h1><p class="welcome-copy">Review your completed design before entering the city.</p><div class="avatar-preview"><div class="avatar-model" id="finalAvatarModel"><div class="avatar-hair"></div><div class="avatar-head"></div><div class="avatar-arm left"></div><div class="avatar-arm right"></div><div class="avatar-body"></div><div class="avatar-leg left"></div><div class="avatar-leg right"></div></div><strong id="finalPreviewName">Your character</strong><small id="finalPreviewLook">Your completed look</small></div><div class="preview-full"><div class="preview-stat"><small>CHARACTER</small><b id="finalGender">—</b></div><div class="preview-stat"><small>SKIN TONE</small><b id="finalSkin">—</b></div><div class="preview-stat"><small>HAIRSTYLE</small><b id="finalHair">—</b></div><div class="preview-stat"><small>OUTFIT</small><b id="finalOutfit">—</b></div><div class="preview-stat"><small>HEAD SHAPE</small><b id="finalHead">—</b></div><div class="preview-stat"><small>BODY STYLE</small><b id="finalBody">—</b></div></div><div class="welcome-actions"><button class="quiet-action" type="button" onclick="showWelcomePage('characterPage',55)">← EDIT CHARACTER</button><button class="gold-action" type="button" onclick="continueFromPreview()">LOOKS GOOD →</button></div></section><section class="welcome-page" id="generationPage">
    <div class="welcome-kicker">STAGE 03 · YOUR BEGINNING</div>
    <h1>Every Nextorian is born into something.</h1>
    <p class="welcome-copy">Spin the wheel and discover the generation your character starts in.</p>
@@ -509,7 +530,7 @@ function updateAvatarPreview(){
 function continueToGeneration(){
  updateAvatarPreview();
  document.getElementById("characterError").textContent="";
- showWelcomePage("generationPage",80);
+ showWelcomePage("previewPage",70);
 }
 function spinGeneration(){
  const button=document.getElementById("spinButton");
