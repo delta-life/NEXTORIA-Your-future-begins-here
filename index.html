@@ -293,6 +293,7 @@ button:active{transform:translateY(0)}
    <button onclick="phoneApp('map')"><span>🗺️</span>City Map</button>
    <button onclick="phoneApp('property')"><span>🏠</span>Properties</button>
    <button onclick="phoneApp('social')"><span>💬</span>Social</button>
+   <button onclick="phoneApp('contacts')"><span>👥</span>Contact</button>
    <button onclick="phoneApp('world')"><span>🌦️</span>World & Weather</button>
   </div>
   <div class="phone-bottom"><span></span></div>
@@ -407,6 +408,7 @@ function phoneApp(app){
   document.getElementById("message").innerText="";
  }else if(app==="property")openProperties();
  else if(app==="social")openSocial();
+ else if(app==="contacts")openContacts();
  else if(app==="world")openWorldControls();
 }
 
@@ -520,19 +522,40 @@ document.querySelectorAll("#genderChoices .choice").forEach(btn=>btn.addEventLis
 ["skinChoice","headChoice","hairChoice","outfitChoice","bodyChoice"].forEach(id=>document.getElementById(id).addEventListener("change",updateAvatarPreview));
 function updateAvatarPreview(){
  const skin=document.getElementById("skinChoice").value;
- const tone={"Dark":"🏿","Deep brown":"🏿","Brown":"🏾","Light":"🏼","Caramel":"🏽"}[skin]||"🏾";
- const face=selectedGender==="Male"?"👨":"👩";
- document.getElementById("avatarFace").textContent=face+tone;
  const hair=document.getElementById("hairChoice").value;
- document.getElementById("previewLook").textContent=selectedGender+" · "+skin+" · "+hair;
- characterProfile={name:characterProfile.name,gender:selectedGender,skin,head:document.getElementById("headChoice").value,hair,outfit:document.getElementById("outfitChoice").value,body:document.getElementById("bodyChoice").value};
+ const head=document.getElementById("headChoice").value;
+ const outfit=document.getElementById("outfitChoice").value;
+ const body=document.getElementById("bodyChoice").value;
+ characterProfile={name:characterProfile.name,gender:selectedGender,skin,head,hair,outfit,body};
+ const skinColors={"Dark":"#3b2118","Deep brown":"#58301f","Brown":"#8b542f","Light":"#c58a62","Caramel":"#a9683f"};
+ const outfitColors={"Boy crop top and baggy jeans":"#1769aa","Shirt and shorts":"#1769aa","Jalabia and cap":"#a77a35","Native wear":"#23816e","Office wear":"#344e76","Corporate two-piece":"#283b5c","Bubu gown":"#8a4d9e","Adire baggy":"#246d83","Crop top and palazzo":"#bd5b82","Floral dress":"#b66a91","Mini skirt and crop top":"#a84e74","Ruffle skirt":"#9d5c9a","Pencil skirt":"#8a557d","Pleated skirt":"#7656a0"};
+ const hairClass=/afro/i.test(hair)?"afro":/baldy/i.test(hair)?"bald":/bone straight|braid|weaving|jada|shuku|pixie/i.test(hair)?"longhair":"";
+ ["avatarModel","finalAvatarModel"].forEach(id=>{
+  const model=document.getElementById(id);if(!model)return;
+  model.style.setProperty("--skin",skinColors[skin]||"#8b542f");
+  model.style.setProperty("--shirt",outfitColors[outfit]||"#1769aa");
+  model.className="avatar-model "+(selectedGender==="Female"?"female ":"")+(head==="Square"?"square ":head==="Strong jaw"?"strong ":"")+hairClass;
+ });
+ document.getElementById("previewLook").textContent=selectedGender+" · "+skin+" · "+hair+" · "+outfit;
 }
 function continueToGeneration(){
  updateAvatarPreview();
  document.getElementById("characterError").textContent="";
  showWelcomePage("previewPage",70);
 }
-function spinGeneration(){
+function continueFromPreview(){
+ document.getElementById("finalPreviewName").textContent=characterProfile.name;
+ document.getElementById("finalPreviewLook").textContent=characterProfile.gender+" · "+characterProfile.skin+" · "+characterProfile.hair;
+ document.getElementById("finalGender").textContent=characterProfile.gender;
+ document.getElementById("finalSkin").textContent=characterProfile.skin;
+ document.getElementById("finalHair").textContent=characterProfile.hair;
+ document.getElementById("finalOutfit").textContent=characterProfile.outfit;
+ document.getElementById("finalHead").textContent=characterProfile.head;
+ document.getElementById("finalBody").textContent=characterProfile.body;
+ updateAvatarPreview();
+ showWelcomePage("generationPage",85);
+}
+\nfunction spinGeneration(){
  const button=document.getElementById("spinButton");
  const wheel=document.getElementById("generationWheel");
  const result=document.getElementById("generationResult");
@@ -1158,7 +1181,37 @@ function collectRent(i){
  if(!ownedProperties.includes(i))return msg('You do not own this property.');
  const rent=propertyCatalog[i].rent;money+=rent;updateMoney();openProperties(i);msg('You collected ₦'+rent.toLocaleString('en-NG')+' virtual rent.');
 }
-function openSocial(){
+
+let nextoriaContacts=[];
+try{nextoriaContacts=JSON.parse(localStorage.getItem("nextoriaContacts")||"[]");if(!Array.isArray(nextoriaContacts))nextoriaContacts=[];}catch(e){nextoriaContacts=[];}
+function saveNextoriaContacts(){
+ try{localStorage.setItem("nextoriaContacts",JSON.stringify(nextoriaContacts));}
+ catch(e){msg("This browser could not save contacts on this device.");}
+}
+function openContacts(){
+ shopOpen=true;currentShop="contacts";
+ document.getElementById("shop").style.display="block";
+ document.getElementById("shopTitle").innerText="👥 NEXTORIA CONTACTS";
+ document.getElementById("shopDescription").innerText="Add people to your local contact list using their NEXTORIA username.";
+ const rows=nextoriaContacts.length?nextoriaContacts.map((name,i)=>'<div class="contact-row"><div><strong>@'+escapeTransferName(name)+'</strong><small>Saved contact</small></div><button onclick="removeNextoriaContact('+i+')">Remove</button></div>').join(""):'<div class="decor-card"><strong>No contacts yet</strong><div class="detail">Add a player's username above to start your list.</div></div>';
+ document.getElementById("shopItems").innerHTML='<div class="contact-form"><strong>Add a player by username</strong><input id="contactUsername" maxlength="20" autocomplete="off" placeholder="Enter their username"><button class="gold-action" onclick="addNextoriaContact()">＋ ADD CONTACT</button></div><p class="contact-note">This prototype saves contacts on this device only. It does not yet search or notify players on other devices; that requires an online player database.</p><div style="margin-top:16px"><strong>MY CONTACTS ('+nextoriaContacts.length+')</strong>'+rows+'</div>';
+ document.getElementById("message").innerText="";
+}
+function addNextoriaContact(){
+ const field=document.getElementById("contactUsername");if(!field)return;
+ const name=field.value.trim().replace(/^@/,"");
+ if(!/^[a-zA-Z0-9_.-]{3,20}$/.test(name))return msg("Enter a username with 3–20 letters, numbers, dots, dashes or underscores.");
+ const lower=name.toLowerCase();
+ const own=demoAccount&&demoAccount.username?demoAccount.username.toLowerCase():"";
+ if(lower===own)return msg("You cannot add your own username.");
+ if(nextoriaContacts.some(x=>x.toLowerCase()===lower))return msg("That username is already in your contacts.");
+ nextoriaContacts.push(name);saveNextoriaContacts();openContacts();msg("@"+name+" added to your contact list.");
+}
+function removeNextoriaContact(index){
+ if(index<0||index>=nextoriaContacts.length)return;
+ const removed=nextoriaContacts.splice(index,1)[0];saveNextoriaContacts();openContacts();msg("@"+removed+" removed.");
+}
+\nfunction openSocial(){
  shopOpen=true;currentShop='social';document.getElementById('shop').style.display='block';
  document.getElementById('shopTitle').innerText='💬 NEXTORIA SOCIAL';
  document.getElementById('shopDescription').innerText='Meet the city community. These are sample local contacts in this single-player prototype.';
