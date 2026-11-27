@@ -577,15 +577,19 @@ function spinGeneration(){
 function applyCharacterAppearance(){
  if(!player||!playerBody||!playerHead||!playerHair)return;
  const skinColors={"Dark":0x3b2118,"Deep brown":0x58301f,"Brown":0x8b542f,"Light":0xc58a62,"Caramel":0xa9683f};
- const skin=skinColors[characterProfile.skin]||0x8b542f;
- playerHead.material.color.setHex(skin);
- playerBody.material.color.setHex(characterProfile.gender==="Female"?0x9b4c86:0x1769aa);
- playerHead.scale.set(characterProfile.head==="Square"?1.08:characterProfile.head==="Strong jaw"?1.04:1,1,1);
- playerBody.scale.set(characterProfile.body==="Broad build"?1.22:characterProfile.body==="Compact build"?.9:1,characterProfile.body==="Tall build"?1.18:characterProfile.body==="Compact build"?.9:1,1);
- playerHair.visible=characterProfile.hair!=="Baldy";
+ const outfitColors={"Boy crop top and baggy jeans":0x1769aa,"Shirt and shorts":0x1769aa,"Jalabia and cap":0xa77a35,"Native wear":0x23816e,"Office wear":0x344e76,"Corporate two-piece":0x283b5c,"Bubu gown":0x8a4d9e,"Adire baggy":0x246d83,"Crop top and palazzo":0xbd5b82,"Floral dress":0xb66a91,"Mini skirt and crop top":0xa84e74,"Ruffle skirt":0x9d5c9a,"Pencil skirt":0x8a557d,"Pleated skirt":0x7656a0};
+ playerHead.material.color.setHex(skinColors[characterProfile.skin]||0x8b542f);
+ playerBody.material.color.setHex(outfitColors[characterProfile.outfit]||(characterProfile.gender==="Female"?0x9b4c86:0x1769aa));
+ const headScale=characterProfile.head==="Square"?1.08:characterProfile.head==="Strong jaw"?1.04:1;
+ playerHead.scale.set(headScale,1,1);
+ const wide=characterProfile.body==="Broad build"?1.22:characterProfile.body==="Compact build"?.9:1;
+ const tall=characterProfile.body==="Tall build"?1.18:characterProfile.body==="Compact build"?.9:1;
+ playerBody.scale.set(wide,tall,1);
+ const hair=characterProfile.hair||"Low cut";
+ playerHair.visible=hair!=="Baldy";
  playerHair.material.color.setHex(0x17110e);
- playerHair.scale.set(1,characterProfile.hair==="Afro"||characterProfile.hair==="Two puffed buns (two shuku)"?.85:.45,1);
- playerHair.position.y=characterProfile.hair==="Afro"?2.32:2.25;
+ playerHair.scale.set(/Afro/i.test(hair)?1.18:1,/Afro/i.test(hair)?.85:/Baldy|Low cut/i.test(hair)?.28:/bone straight|braid|weaving|jada|shuku|pixie/i.test(hair)?.95:.45,1);
+ playerHair.position.y=/Afro/i.test(hair)?2.32:2.25;
 }
 
 function enterNextoria(){
