@@ -212,17 +212,17 @@ button:active{transform:translateY(0)}
     <label>Character name<input id="characterNameInput" required maxlength="24" placeholder="What should your character be called?"></label>
     <label>Username<input id="signupUsername" required minlength="3" maxlength="20" autocomplete="username" placeholder="Choose a username"></label>
     <label>Password<input id="signupPassword" required minlength="8" type="password" autocomplete="new-password" placeholder="At least 8 characters"></label>
-    <label>Email<input id="signupEmail" required type="email" autocomplete="email" placeholder="you@example.com"></label>
+
     <button class="gold-action" type="button" onclick="handleSignup(event)">CREATE ACCOUNT <span>→</span></button>
    </form>
    <p class="welcome-switch" id="signupSwitch">Already have an account? <button type="button" onclick="showLogin()">Log in</button></p>
    <form id="loginForm" class="welcome-form" style="display:none">
-    <label>Email address<input id="loginEmail" required type="email" autocomplete="email" placeholder="The email used to sign up"></label>
+    <label>Username<input id="loginUsername" required minlength="3" maxlength="20" autocomplete="username" placeholder="Your NEXTORIA username"></label>
     <label>Password<input id="loginPassword" required type="password" autocomplete="current-password" placeholder="Your password"></label>
     <button class="gold-action" type="submit">LOG IN <span>→</span></button>
    </form>
    <p class="welcome-switch" id="loginSwitch" style="display:none">New here? <button type="button" onclick="showSignup()">Sign up</button></p>
-   <p class="demo-note">Online accounts are powered by NEXTORIA’s player database. Your password is handled securely by Supabase Auth. Virtual money and purchases are still local in this version.</p>
+   <p class="demo-note">Create an account with a username and password. No email address is needed. Passwords are handled securely by Supabase Auth.</p>
    <p class="welcome-error" id="accountError" aria-live="polite"></p>
   </section>
 
@@ -535,21 +535,17 @@ async function handleSignup(e){
  if(e)e.preventDefault();
  const username=document.getElementById("signupUsername").value.trim();
  const password=document.getElementById("signupPassword").value;
- const email=document.getElementById("signupEmail").value.trim();
  const name=document.getElementById("characterNameInput").value.trim();
- if(!name||!username||!password||!email){accountMessage("Please complete every field.");return false;}
+ const authEmail=username.toLowerCase()+"@nextoria.invalid";
+ if(!name||!username||!password){accountMessage("Please complete your character name, username and password.");return false;}
  if(!/^[a-zA-Z0-9_.-]{3,20}$/.test(username)){accountMessage("Username must be 3–20 characters: letters, numbers, dots, dashes or underscores.");return false;}
  if(password.length<8){accountMessage("Please use a password with at least 8 characters.");return false;}
- if(!document.getElementById("signupEmail").checkValidity()){accountMessage("Please enter a valid email address.");return false;}
  if(!supabaseClient){accountMessage("The online account service could not load. Refresh the page and try again.");return false;}
  const button=document.querySelector("#signupForm .gold-action");
  if(button){button.disabled=true;button.textContent="CREATING ACCOUNT...";}
  accountMessage("");
  try{
-  const result=await supabaseClient.auth.signUp({
-   email,password,
-   options:{data:{username,display_name:name,character_name:name}}
-  });
+  const result=await supabaseClient.auth.signUp({email:authEmail,password,options:{data:{username,display_name:name,character_name:name}}});
   if(result.error)throw result.error;
   characterProfile.name=name;
   document.getElementById("previewName").textContent=name;
@@ -559,18 +555,14 @@ async function handleSignup(e){
    prepareCharacterChoices();
    showWelcomePage("characterPage",55);
   }else{
-   accountMessage("Your signup request was received. If email confirmation is enabled, check your inbox and spam folder for the verification link. Do not submit the form repeatedly.");
+   accountMessage("NEXTORIA did not receive a login session. In Supabase, turn OFF Authentication → Providers → Email → Confirm email, save, then try again.");
   }
  }catch(error){
   console.error("NEXTORIA signup:",error);
   const detail=String(error.message||"");
-  if(/rate limit|too many requests|email rate/i.test(detail)){
-   accountMessage("Supabase has temporarily limited signup emails for this project. Please wait for the limit to reset, or have the project owner connect a custom SMTP email service in Supabase. This cannot be fixed by changing your username or password.");
-  }else if(/already registered|already exists/i.test(detail)){
-   accountMessage("This email may already have an account. Try logging in with that email, or use a different email address.");
-  }else{
-   accountMessage(detail||"We could not create your account. Please check your details and try again.");
-  }
+  if(/already registered|already exists|duplicate key|unique constraint/i.test(detail))accountMessage("That username may already be taken. Please choose another username.");
+  else if(/rate limit|too many requests/i.test(detail))accountMessage("Signup is temporarily limited by Supabase. Please wait before trying again.");
+  else accountMessage(detail||"We could not create your account. Please check your details and try again.");
  }finally{
   if(button){button.disabled=false;button.innerHTML='CREATE ACCOUNT <span>→</span>';}
  }
@@ -579,15 +571,17 @@ async function handleSignup(e){
 document.getElementById("signupForm").addEventListener("submit",handleSignup);
 document.getElementById("loginForm").addEventListener("submit",async e=>{
  e.preventDefault();
- const email=document.getElementById("loginEmail").value.trim();
+ const username=document.getElementById("loginUsername").value.trim();
  const password=document.getElementById("loginPassword").value;
- if(!email||!password){accountMessage("Enter your email and password.");return;}
+ if(!username||!password){accountMessage("Enter your username and password.");return;}
+ if(!/^[a-zA-Z0-9_.-]{3,20}$/.test(username)){accountMessage("Enter a valid NEXTORIA username.");return;}
  if(!supabaseClient){accountMessage("The online account service could not load. Refresh the page and try again.");return;}
  const button=document.querySelector("#loginForm .gold-action");
  if(button){button.disabled=true;button.textContent="LOGGING IN...";}
  accountMessage("");
  try{
-  const result=await supabaseClient.auth.signInWithPassword({email,password});
+  const authEmail=username.toLowerCase()+"@nextoria.invalid";
+  const result=await supabaseClient.auth.signInWithPassword({email:authEmail,password});
   if(result.error)throw result.error;
   const profile=await ensureOnlineProfile(result.data.user);
   if(profile.character&&typeof profile.character==="object"){
@@ -599,7 +593,7 @@ document.getElementById("loginForm").addEventListener("submit",async e=>{
   showWelcomePage("characterPage",55);
  }catch(error){
   console.error("NEXTORIA login:",error);
-  accountMessage(error.message||"Login failed. Check your email and password.");
+  accountMessage("Login failed. Check your username and password. Older accounts created with an email address need migration before username-only login can work.");
  }finally{
   if(button){button.disabled=false;button.innerHTML='LOG IN <span>→</span>';}
  }
