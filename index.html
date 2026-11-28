@@ -211,7 +211,7 @@ button:active{transform:translateY(0)}
    <form id="signupForm" class="welcome-form">
     <label>Character name<input id="characterNameInput" required maxlength="24" placeholder="What should your character be called?"></label>
     <label>Username<input id="signupUsername" required minlength="3" maxlength="20" autocomplete="username" placeholder="Choose a username"></label>
-    <label>Password<input id="signupPassword" required minlength="8" type="password" autocomplete="new-password" placeholder="At least 6 characters"></label>
+    <label>Password<input id="signupPassword" required minlength="8" type="password" autocomplete="new-password" placeholder="At least 8 characters"></label>
     <label>Email<input id="signupEmail" required type="email" autocomplete="email" placeholder="you@example.com"></label>
     <button class="gold-action" type="button" onclick="handleSignup(event)">CREATE ACCOUNT <span>→</span></button>
    </form>
@@ -559,12 +559,18 @@ async function handleSignup(e){
    prepareCharacterChoices();
    showWelcomePage("characterPage",55);
   }else{
-   accountMessage("Account created! Check your email for the verification link, then return here and log in with your email and password.");
-   showLogin();
+   accountMessage("Your signup request was received. If email confirmation is enabled, check your inbox and spam folder for the verification link. Do not submit the form repeatedly.");
   }
  }catch(error){
   console.error("NEXTORIA signup:",error);
-  accountMessage(error.message||"We could not create your account. Please check your details and try again.");
+  const detail=String(error.message||"");
+  if(/rate limit|too many requests|email rate/i.test(detail)){
+   accountMessage("Supabase has temporarily limited signup emails for this project. Please wait for the limit to reset, or have the project owner connect a custom SMTP email service in Supabase. This cannot be fixed by changing your username or password.");
+  }else if(/already registered|already exists/i.test(detail)){
+   accountMessage("This email may already have an account. Try logging in with that email, or use a different email address.");
+  }else{
+   accountMessage(detail||"We could not create your account. Please check your details and try again.");
+  }
  }finally{
   if(button){button.disabled=false;button.innerHTML='CREATE ACCOUNT <span>→</span>';}
  }
