@@ -1312,7 +1312,7 @@ function addNextoriaContact(){
  const name=field.value.trim().replace(/^@/,"");
  if(!/^[a-zA-Z0-9_.-]{3,20}$/.test(name))return msg("Enter a username with 3–20 letters, numbers, dots, dashes or underscores.");
  const lower=name.toLowerCase();
- const own=demoAccount&&demoAccount.username?demoAccount.username.toLowerCase():"";
+ const own=onlineProfile&&onlineProfile.username?onlineProfile.username.toLowerCase():(onlineUser&&onlineUser.user_metadata&&onlineUser.user_metadata.username?String(onlineUser.user_metadata.username).toLowerCase():"");
  if(lower===own)return msg("You cannot add your own username.");
  if(nextoriaContacts.some(x=>x.toLowerCase()===lower))return msg("That username is already in your contacts.");
  nextoriaContacts.push(name);saveNextoriaContacts();openContacts();msg("@"+name+" added to your contact list.");
