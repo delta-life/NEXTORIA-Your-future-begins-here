@@ -212,18 +212,17 @@ button:active{transform:translateY(0)}
     <label>Character name<input id="characterNameInput" required maxlength="24" placeholder="What should your character be called?"></label>
     <label>Username<input id="signupUsername" required minlength="3" maxlength="20" autocomplete="username" placeholder="Choose a username"></label>
     <label>Password<input id="signupPassword" required minlength="6" type="password" autocomplete="new-password" placeholder="At least 6 characters"></label>
-    <label>Date of birth<input id="birthDate" required type="date"></label>
     <label>Email<input id="signupEmail" required type="email" autocomplete="email" placeholder="you@example.com"></label>
     <button class="gold-action" type="button" onclick="handleSignup(event)">CREATE ACCOUNT <span>→</span></button>
    </form>
    <p class="welcome-switch" id="signupSwitch">Already have an account? <button type="button" onclick="showLogin()">Log in</button></p>
    <form id="loginForm" class="welcome-form" style="display:none">
-    <label>Username<input id="loginUsername" required autocomplete="username" placeholder="Your username"></label>
+    <label>Email address<input id="loginEmail" required type="email" autocomplete="email" placeholder="The email used to sign up"></label>
     <label>Password<input id="loginPassword" required type="password" autocomplete="current-password" placeholder="Your password"></label>
     <button class="gold-action" type="submit">LOG IN <span>→</span></button>
    </form>
    <p class="welcome-switch" id="loginSwitch" style="display:none">New here? <button type="button" onclick="showSignup()">Sign up</button></p>
-   <p class="demo-note">Prototype mode: use made-up test details. This demo does not create a secure online account.</p>
+   <p class="demo-note">Online accounts are powered by NEXTORIA’s player database. Your password is handled securely by Supabase Auth. Virtual money and purchases are still local in this version.</p>
    <p class="welcome-error" id="accountError" aria-live="polite"></p>
   </section>
 
@@ -313,6 +312,7 @@ button:active{transform:translateY(0)}
  <button class="close" onclick="closeShop()">Close</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 let scene,camera,renderer,player,car,playerBody,playerHead,playerHair,playerSun;
@@ -447,10 +447,65 @@ function openNextCredit(){
  document.getElementById("message").innerText="";
 }
 
-let demoAccount=null;
+const NEXTORIA_SUPABASE_URL="https://qwwelkkoazankwtuanzk.supabase.co";
+const NEXTORIA_SUPABASE_KEY="sb_publishable_vdjrhQ6E0MRnPzvaig1Wlw_v02dfAkt";
+let supabaseClient=null;
+let onlineUser=null;
+let onlineProfile=null;
 let selectedGender="Male";
 let selectedGeneration=null;
 let characterProfile={name:"Chukwudi",gender:"Male",skin:"Brown",head:"Round",hair:"Low cut",outfit:"Shirt and shorts",body:"Balanced build"};
+try{
+ if(window.supabase&&window.supabase.createClient){
+  supabaseClient=window.supabase.createClient(NEXTORIA_SUPABASE_URL,NEXTORIA_SUPABASE_KEY);
+ }
+}catch(error){console.error("NEXTORIA database setup:",error);}
+function accountMessage(message){
+ const el=document.getElementById("accountError");
+ if(el)el.textContent=message;
+}
+async function ensureOnlineProfile(user){
+ if(!supabaseClient||!user)throw new Error("The online account service is not available.");
+ onlineUser=user;
+ const metadata=user.user_metadata||{};
+ const username=String(metadata.username||"").trim();
+ const displayName=String(metadata.display_name||metadata.character_name||username).trim();
+ if(!username)throw new Error("Your account is missing its username. Please contact NEXTORIA support.");
+ const profileResult=await supabaseClient.from("player_profiles").select("*").eq("id",user.id).maybeSingle();
+ if(profileResult.error)throw profileResult.error;
+ if(profileResult.data){
+  onlineProfile=profileResult.data;
+  if(onlineProfile.character&&typeof onlineProfile.character==="object"){
+   characterProfile={...characterProfile,...onlineProfile.character};
+   selectedGender=characterProfile.gender||selectedGender;
+  }
+ }else{
+  const created=await supabaseClient.from("player_profiles").insert({
+   id:user.id,username,display_name:displayName,
+   generation:"Pending",balance:0,loan_balance:0,
+   character:characterProfile,game_state:{}
+  }).select("*").single();
+  if(created.error)throw created.error;
+  onlineProfile=created.data;
+ }
+ const directoryResult=await supabaseClient.from("player_directory").upsert({
+  id:user.id,username,display_name:displayName
+ },{onConflict:"id"});
+ if(directoryResult.error)throw directoryResult.error;
+ return onlineProfile;
+}
+async function saveOnlineCharacter(){
+ if(!supabaseClient||!onlineUser)return;
+ const result=await supabaseClient.from("player_profiles").update({
+  character:characterProfile,
+  generation:selectedGeneration||"Pending"
+ }).eq("id",onlineUser.id);
+ if(result.error)throw result.error;
+ if(onlineProfile){
+  onlineProfile.character={...characterProfile};
+  onlineProfile.generation=selectedGeneration||"Pending";
+ }
+}
 const hairOptions={Male:["Taper fade","Round cut","Low cut","Baldy","Afro"],Female:["Bone straight","Pixie curls","All back","Ghana weaving","Two puffed buns (two shuku)","Jada Wader braids"]};
 const outfitOptions={Male:["Boy crop top and baggy jeans","Shirt and shorts","Jalabia and cap","Native wear","Office wear","Corporate two-piece"],Female:["Bubu gown","Adire baggy","Crop top and palazzo","Floral dress","Mini skirt and crop top","Ruffle skirt","Pencil skirt","Pleated skirt"]};
 function showWelcomePage(id,progress){
@@ -476,36 +531,72 @@ function showSignup(){
  document.getElementById("loginSwitch").style.display="none";
  document.getElementById("accountError").textContent="";
 }
-function handleSignup(e){
+async function handleSignup(e){
  if(e)e.preventDefault();
  const username=document.getElementById("signupUsername").value.trim();
  const password=document.getElementById("signupPassword").value;
  const email=document.getElementById("signupEmail").value.trim();
- const dob=document.getElementById("birthDate").value;
  const name=document.getElementById("characterNameInput").value.trim();
- const error=document.getElementById("accountError");
- if(!name||!username||!password||!email||!dob){error.textContent="Please complete every field.";return false;}
- if(password.length<6){error.textContent="Please use at least 6 characters for this demo password.";return false;}
- if(!document.getElementById("signupEmail").checkValidity()){error.textContent="Please enter a valid email address.";return false;}
- demoAccount={username,password,email,dob,characterName:name};
- characterProfile.name=name;
- document.getElementById("previewName").textContent=name;
- error.textContent="";
- prepareCharacterChoices();
- showWelcomePage("characterPage",55);
+ if(!name||!username||!password||!email){accountMessage("Please complete every field.");return false;}
+ if(!/^[a-zA-Z0-9_.-]{3,20}$/.test(username)){accountMessage("Username must be 3–20 characters: letters, numbers, dots, dashes or underscores.");return false;}
+ if(password.length<8){accountMessage("Please use a password with at least 8 characters.");return false;}
+ if(!document.getElementById("signupEmail").checkValidity()){accountMessage("Please enter a valid email address.");return false;}
+ if(!supabaseClient){accountMessage("The online account service could not load. Refresh the page and try again.");return false;}
+ const button=document.querySelector("#signupForm .gold-action");
+ if(button){button.disabled=true;button.textContent="CREATING ACCOUNT...";}
+ accountMessage("");
+ try{
+  const result=await supabaseClient.auth.signUp({
+   email,password,
+   options:{data:{username,display_name:name,character_name:name}}
+  });
+  if(result.error)throw result.error;
+  characterProfile.name=name;
+  document.getElementById("previewName").textContent=name;
+  if(result.data.session&&result.data.user){
+   await ensureOnlineProfile(result.data.user);
+   accountMessage("");
+   prepareCharacterChoices();
+   showWelcomePage("characterPage",55);
+  }else{
+   accountMessage("Account created! Check your email for the verification link, then return here and log in with your email and password.");
+   showLogin();
+  }
+ }catch(error){
+  console.error("NEXTORIA signup:",error);
+  accountMessage(error.message||"We could not create your account. Please check your details and try again.");
+ }finally{
+  if(button){button.disabled=false;button.innerHTML='CREATE ACCOUNT <span>→</span>';}
+ }
  return false;
 }
 document.getElementById("signupForm").addEventListener("submit",handleSignup);
-document.getElementById("loginForm").addEventListener("submit",e=>{
+document.getElementById("loginForm").addEventListener("submit",async e=>{
  e.preventDefault();
- const username=document.getElementById("loginUsername").value.trim();
+ const email=document.getElementById("loginEmail").value.trim();
  const password=document.getElementById("loginPassword").value;
- if(!demoAccount){document.getElementById("accountError").textContent="No demo account exists in this browser session yet. Please sign up first.";return;}
- if(username!==demoAccount.username||password!==demoAccount.password){document.getElementById("accountError").textContent="That username or password doesn't match this demo account.";return;}
- characterProfile.name=demoAccount.characterName;
- document.getElementById("previewName").textContent=characterProfile.name;
- prepareCharacterChoices();
- showWelcomePage("characterPage",55);
+ if(!email||!password){accountMessage("Enter your email and password.");return;}
+ if(!supabaseClient){accountMessage("The online account service could not load. Refresh the page and try again.");return;}
+ const button=document.querySelector("#loginForm .gold-action");
+ if(button){button.disabled=true;button.textContent="LOGGING IN...";}
+ accountMessage("");
+ try{
+  const result=await supabaseClient.auth.signInWithPassword({email,password});
+  if(result.error)throw result.error;
+  const profile=await ensureOnlineProfile(result.data.user);
+  if(profile.character&&typeof profile.character==="object"){
+   characterProfile={...characterProfile,...profile.character};
+   selectedGender=characterProfile.gender||"Male";
+  }
+  document.getElementById("previewName").textContent=characterProfile.name||profile.display_name||profile.username;
+  prepareCharacterChoices();
+  showWelcomePage("characterPage",55);
+ }catch(error){
+  console.error("NEXTORIA login:",error);
+  accountMessage(error.message||"Login failed. Check your email and password.");
+ }finally{
+  if(button){button.disabled=false;button.innerHTML='LOG IN <span>→</span>';}
+ }
 });
 function backToAccount(){showWelcomePage("accountPage",25);}
 function prepareCharacterChoices(){
@@ -593,6 +684,7 @@ function applyCharacterAppearance(){
 }
 
 function enterNextoria(){
+ if(onlineUser){saveOnlineCharacter().catch(error=>{console.error("NEXTORIA profile save:",error);msg("Your character could not sync right now. Please check your connection.");});}
  money=selectedGeneration==="Gen Z"?100000000:50000000;
  loanBalance=selectedGeneration==="Gen X"?50000000:0;
  const moneyEl=document.getElementById("money");
