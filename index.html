@@ -560,7 +560,8 @@ async function handleSignup(e){
  }catch(error){
   console.error("NEXTORIA signup:",error);
   const detail=String(error.message||"");
-  if(/already registered|already exists|duplicate key|unique constraint/i.test(detail))accountMessage("That username may already be taken. Please choose another username.");
+  if(/email.*(disabled|not enabled)|signups.*disabled|provider.*disabled/i.test(detail))accountMessage("Supabase Email sign-in is OFF. To keep NEXTORIA username-only, open Supabase → Authentication → Providers → Email, switch ON Enable Email provider, keep Confirm email OFF, and save. Players will still only see username and password here.");
+  else if(/already registered|already exists|duplicate key|unique constraint/i.test(detail))accountMessage("That username may already be taken. Please choose another username.");
   else if(/rate limit|too many requests/i.test(detail))accountMessage("Signup is temporarily limited by Supabase. Please wait before trying again.");
   else accountMessage(detail||"We could not create your account. Please check your details and try again.");
  }finally{
@@ -593,7 +594,9 @@ document.getElementById("loginForm").addEventListener("submit",async e=>{
   showWelcomePage("characterPage",55);
  }catch(error){
   console.error("NEXTORIA login:",error);
-  accountMessage("Login failed. Check your username and password. Older accounts created with an email address need migration before username-only login can work.");
+  const detail=String(error.message||"");
+  if(/email.*(disabled|not enabled)|signups.*disabled|provider.*disabled/i.test(detail))accountMessage("Supabase Email sign-in is OFF. Open Supabase → Authentication → Providers → Email, switch ON Enable Email provider, keep Confirm email OFF, and save. NEXTORIA still shows username and password only.");
+  else accountMessage("Login failed. Check your username and password. Older accounts created with an email address need migration before username-only login can work.");
  }finally{
   if(button){button.disabled=false;button.innerHTML='LOG IN <span>→</span>';}
  }
